@@ -415,6 +415,12 @@
             document.getElementById('form-login').classList.remove('hidden');
             mensaje.innerText = "";
         }
+        // MOSTRAR FORMULARIO DE RECUPERAR CONTRASEÑA
+function mostrarRecuperar() {
+    document.getElementById('form-login').classList.add('hidden');
+    document.getElementById('form-recuperar').classList.remove('hidden');
+    mensaje.innerText = "";
+}
 
         // ============================================
         // PASO 1: INICIAR CON GOOGLE
