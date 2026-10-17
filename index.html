@@ -208,77 +208,6 @@
             color: #666;
         }
 
-        .alert-info {
-            background-color: #e7f3ff;
-            border-left: 4px solid #007bff;
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            color: #004085;
-            margin-bottom: 15px;
-        }
-
-        /* Cartel de éxito de recuperación */
-        .alert-success {
-            background-color: #d4edda;
-            border-left: 4px solid #28a745;
-            padding: 14px;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #155724;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            animation: slideDown 0.3s ease-out;
-        }
-        .alert-success .icon {
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-        .alert-success .close-btn {
-            margin-left: auto;
-            background: none;
-            border: none;
-            color: #155724;
-            cursor: pointer;
-            font-size: 18px;
-            padding: 0 5px;
-            opacity: 0.6;
-        }
-        .alert-success .close-btn:hover {
-            opacity: 1;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 20px 0;
-            color: #999;
-            font-size: 14px;
-        }
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #ddd;
-        }
-        .divider span {
-            padding: 0 10px;
-        }
-
         #mensaje {
             text-align: center;
             margin-top: 15px;
@@ -315,16 +244,6 @@
                 <h2>Bienvenido de nuevo</h2>
                 <p class="subtitle">Inicia sesión para continuar</p>
                 
-                <!-- Cartel de recuperación exitosa (oculto por defecto) -->
-                <div id="alerta-recuperacion" class="alert-success hidden">
-                    <span class="icon">✅</span>
-                    <div>
-                        <strong>Su contraseña ha sido restablecida.</strong><br>
-                        Revise su correo electrónico. Si no lo ves, revisa tu carpeta de spam.
-                    </div>
-                    <button class="close-btn" onclick="cerrarAlertaRecuperacion()" title="Cerrar">✕</button>
-                </div>
-                
                 <div class="input-group">
                     <label>Correo electrónico</label>
                     <input type="email" id="login-email" placeholder="tu@correo.com">
@@ -340,7 +259,6 @@
                     </button>
                 </div>
                 <button class="btn-primary" onclick="iniciarSesion()">Entrar</button>
-                <button class="link-btn" onclick="mostrarRecuperar()">¿Olvidaste tu contraseña?</button>
                 
                 <div style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
                     <p class="subtitle" style="margin-bottom: 10px;">¿No tienes cuenta?</p>
@@ -354,42 +272,6 @@
                         Crear cuenta con Google
                     </button>
                 </div>
-            </div>
-
-            <!-- ============================================ -->
-            <!-- FORMULARIO DE RECUPERAR CONTRASEÑA           -->
-            <!-- ============================================ -->
-            <div id="form-recuperar" class="hidden">
-                <h2>Recuperar Contraseña</h2>
-                <p class="subtitle">Selecciona tu cuenta de Google y te enviaremos un enlace para restablecer tu contraseña.</p>
-                
-                <div class="alert-info">
-                    💡 <strong>Nota:</strong> Recibirás un enlace en tu correo de Gmail para crear una nueva contraseña.
-                </div>
-
-                <!-- Botón principal: Recuperar con Google -->
-                <button class="btn-google" onclick="recuperarConGoogle()">
-                    <svg viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Recuperar con Google
-                </button>
-
-                <div class="divider">
-                    <span>o ingresa tu correo manualmente</span>
-                </div>
-                
-                <!-- Opción manual (secundaria) -->
-                <div class="input-group">
-                    <label>Correo electrónico (Gmail)</label>
-                    <input type="email" id="recuperar-email" placeholder="tu@gmail.com">
-                </div>
-                <button class="btn-primary" onclick="recuperarCuenta()">Enviar Enlace de Recuperación</button>
-                
-                <button class="link-btn" onclick="volverAlLogin()">← Volver al inicio de sesión</button>
             </div>
 
             <!-- ============================================ -->
@@ -472,7 +354,6 @@
         
         let usuarioGoogleTemporal = null;
         let telefonoInputInstance = null;
-        let mostrarAlertaRecuperacion = false;
 
         // Al cargar la página, si ya está logueado y tiene datos completos, ir al dashboard
         auth.onAuthStateChanged((user) => {
@@ -507,39 +388,6 @@
             }
         }
 
-        // CERRAR ALERTA DE RECUPERACIÓN
-        function cerrarAlertaRecuperacion() {
-            document.getElementById('alerta-recuperacion').classList.add('hidden');
-            mostrarAlertaRecuperacion = false;
-        }
-
-        // VOLVER AL LOGIN
-        function volverAlLogin(mostrarAlerta = false) {
-            document.getElementById('form-recuperar').classList.add('hidden');
-            document.getElementById('form-login').classList.remove('hidden');
-            mensaje.innerText = "";
-            
-            if (mostrarAlerta) {
-                mostrarAlertaRecuperacion = true;
-                document.getElementById('alerta-recuperacion').classList.remove('hidden');
-                // Auto-ocultar después de 10 segundos
-                setTimeout(() => {
-                    if (mostrarAlertaRecuperacion) {
-                        cerrarAlertaRecuperacion();
-                    }
-                }, 10000);
-            }
-        }
-
-        // MOSTRAR FORMULARIO DE RECUPERAR CONTRASEÑA
-        function mostrarRecuperar() {
-            document.getElementById('form-login').classList.add('hidden');
-            document.getElementById('form-recuperar').classList.remove('hidden');
-            mensaje.innerText = "";
-            // Ocultar alerta si estaba visible
-            cerrarAlertaRecuperacion();
-        }
-
         // ============================================
         // PASO 1: INICIAR CON GOOGLE
         // ============================================
@@ -562,34 +410,6 @@
                             mostrarPaso2Google(user);
                         }
                     });
-                })
-                .catch((error) => {
-                    mostrarMensaje("Error: " + error.message, "red");
-                });
-        }
-
-        // ============================================
-        // RECUPERAR CONTRASEÑA CON GOOGLE
-        // ============================================
-        function recuperarConGoogle() {
-            mostrarMensaje("Conectando con Google...", "blue");
-
-            auth.signInWithPopup(googleProvider)
-                .then((result) => {
-                    const user = result.user;
-                    const email = user.email;
-                    
-                    // Enviar enlace de recuperación al correo de Google
-                    return auth.sendPasswordResetEmail(email)
-                        .then(() => {
-                            // Cerrar sesión después de enviar el correo
-                            return auth.signOut();
-                        })
-                        .then(() => {
-                            // Volver al login mostrando la alerta de éxito
-                            volverAlLogin(true);
-                            mostrarMensaje("");
-                        });
                 })
                 .catch((error) => {
                     mostrarMensaje("Error: " + error.message, "red");
@@ -623,7 +443,6 @@
         // INICIALIZAR SELECTOR DE TELÉFONO CON BANDERAS Y BÚSQUEDA
         // ============================================
         function inicializarSelectorTelefono() {
-            // Si ya existe una instancia, destruirla
             if (telefonoInputInstance) {
                 telefonoInputInstance.destroy();
             }
@@ -633,7 +452,6 @@
             telefonoInputInstance = window.intlTelInput(input, {
                 initialCountry: "auto",
                 geoIpLookup: function(callback) {
-                    // Intento 1: ipapi.co
                     fetch("https://ipapi.co/json/")
                         .then(res => res.json())
                         .then(data => {
@@ -644,7 +462,6 @@
                             }
                         })
                         .catch(() => {
-                            // Intento 2: ip-api.com (fallback)
                             fetch("http://ip-api.com/json/")
                                 .then(res => res.json())
                                 .then(data => {
@@ -655,14 +472,13 @@
                                     }
                                 })
                                 .catch(() => {
-                                    // Default final: España
                                     callback("es");
                                 });
                         });
                 },
                 utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/utils.js",
                 separateDialCode: true,
-                showSearchBox: true, // Activa la lupa/búsqueda
+                showSearchBox: true,
                 searchBoxPlaceholder: "Buscar país...",
                 preferredCountries: ["es", "mx", "ar", "co", "cl", "pe", "ve", "us", "do", "pr", "gt", "hn", "sv", "ni", "cr", "pa", "cu", "ec", "bo", "py", "uy"],
                 autoPlaceholder: "polite",
@@ -679,7 +495,6 @@
             const password = document.getElementById('g-password').value;
             const confirm = document.getElementById('g-confirm').value;
 
-            // Obtener teléfono completo con código de país
             const telefonoCompleto = telefonoInputInstance.getNumber();
             const paisSeleccionado = telefonoInputInstance.getSelectedCountryData();
             const codigoPais = paisSeleccionado.iso2;
@@ -694,7 +509,6 @@
 
             const user = usuarioGoogleTemporal;
 
-            // Guardar datos en la base de datos
             db.ref('usuarios/' + user.uid).set({
                 nombre: nombre,
                 apellido: apellido,
@@ -708,29 +522,25 @@
                 correoVerificado: true
             })
             .then(() => {
-                // Establecer la contraseña en la cuenta de Google
                 return user.updatePassword(password);
             })
             .then(() => {
-                // Cerrar sesión para que el usuario inicie manualmente
                 return auth.signOut();
             })
             .then(() => {
                 usuarioGoogleTemporal = null;
                 mostrarMensaje("¡Cuenta creada exitosamente! Ahora inicia sesión.", "green");
                 
-                // Limpiar campos
                 document.getElementById('g-nombre').value = "";
                 document.getElementById('g-apellido').value = "";
                 document.getElementById('g-password').value = "";
                 document.getElementById('g-confirm').value = "";
                 if (telefonoInputInstance) telefonoInputInstance.setNumber("");
                 
-                // Volver al formulario de login
                 setTimeout(() => {
                     document.getElementById('form-google-paso2').classList.add('hidden');
                     document.getElementById('form-login').classList.remove('hidden');
-                    document.getElementById('login-email').value = user.email; // Pre-llenar el correo
+                    document.getElementById('login-email').value = user.email;
                     mostrarMensaje("");
                 }, 2000);
             })
@@ -769,39 +579,6 @@
                     mostrarMensaje("¡Inicio de sesión exitoso! Redirigiendo...", "green");
                 })
                 .catch((error) => mostrarMensaje("Error: " + traducirError(error.code), "red"));
-        }
-
-        // ============================================
-        // RECUPERAR CONTRASEÑA MANUAL (correo escrito)
-        // ============================================
-        function recuperarCuenta() {
-            const email = document.getElementById('recuperar-email').value.trim();
-            
-            if (!email) return mostrarMensaje("Ingresa tu correo electrónico.", "red");
-            if (!email.toLowerCase().endsWith('@gmail.com') && !email.toLowerCase().includes('@')) {
-                return mostrarMensaje("Por favor, ingresa un correo válido.", "red");
-            }
-
-            mostrarMensaje("Enviando enlace de recuperación...", "blue");
-
-            auth.sendPasswordResetEmail(email)
-                .then(() => {
-                    // Volver al login con alerta de éxito
-                    volverAlLogin(true);
-                    mostrarMensaje("");
-                })
-                .catch((error) => {
-                    let errorMsg = traducirError(error.code);
-                    
-                    // Manejo especial para cuentas solo de Google sin contraseña
-                    if (error.code === 'auth/user-not-found') {
-                        errorMsg = "No encontramos una cuenta con ese correo. Verifica que hayas completado el registro con Google.";
-                    } else if (error.message.includes('password')) {
-                        errorMsg = "Esta cuenta fue creada solo con Google. Inicia sesión directamente con el botón 'Crear cuenta con Google' o completa tu registro primero.";
-                    }
-                    
-                    mostrarMensaje("Error: " + errorMsg, "red");
-                });
         }
 
         // UTILIDADES
