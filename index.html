@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Web con Firebase</title>
+    <!-- Cargamos las librerías de Firebase desde CDN -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+    <h1>Base de Datos Google + GitHub Pages</h1>
+    
+    <input type="text" id="nombreInput" placeholder="Escribe un nombre">
+    <button onclick="guardarDato()">Guardar</button>
+    
+    <h2>Datos en la base de datos:</h2>
+    <ul id="listaDatos"></ul>
+
+    <script>
+        // 1. PEGA AQUÍ LA CONFIGURACIÓN QUE COPIASTE EN EL PASO 1
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "tu-proyecto.firebaseapp.com",
+            projectId: "tu-proyecto-id",
+            storageBucket: "tu-proyecto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abcdef"
+        };
+
+        // 2. Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 3. Función para GUARDAR datos
+        function guardarDato() {
+            const nombre = document.getElementById('nombreInput').value;
+            if(nombre === "") return;
+
+            db.collection("usuarios").add({
+                nombre: nombre,
+                fecha: new Date()
+            })
+            .then(() => {
+                console.log("Dato guardado!");
+                document.getElementById('nombreInput').value = "";
+                leerDatos(); // Refrescar la lista
+            });
+        }
+
+        // 4. Función para LEER datos
+        function leerDatos() {
+            const lista = document.getElementById('listaDatos');
+            lista.innerHTML = ""; // Limpiar lista actual
+
+            db.collection("usuarios").orderBy("fecha", "desc").get()
+            .then((querySnapshot) => {
+                querySnapshot.forEach((doc) => {
+                    const li = document.createElement('li');
+                    li.textContent = doc.data().nombre;
+                    lista.appendChild(li);
+                });
+            });
+        }
+
+        // Cargar datos al iniciar la página
+        leerDatos();
+    </script>
+</body>
+</html>
