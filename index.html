@@ -2,68 +2,125 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Mi Web con Firebase</title>
-    <!-- Cargamos las librerías de Firebase desde CDN -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Web App Global</title>
+    <!-- Firebase SDK (Versión Compat para facilitar el uso en un solo archivo HTML) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: #333; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        .btn-secondary { background-color: #6c757d; }
+        .btn-secondary:hover { background-color: #545b62; }
+        #mensaje { text-align: center; margin-top: 15px; color: red; font-size: 14px; min-height: 20px;}
+        #seccionUsuario { text-align: center; display: none; }
+    </style>
 </head>
 <body>
-    <h1>Base de Datos Google + GitHub Pages</h1>
-    
-    <input type="text" id="nombreInput" placeholder="Escribe un nombre">
-    <button onclick="guardarDato()">Guardar</button>
-    
-    <h2>Datos en la base de datos:</h2>
-    <ul id="listaDatos"></ul>
+
+    <!-- SECCIÓN DE LOGIN -->
+    <div class="container" id="seccionLogin">
+        <h2>Iniciar Sesión</h2>
+        <input type="email" id="email" placeholder="Correo electrónico">
+        <input type="password" id="password" placeholder="Contraseña">
+        <button onclick="iniciarSesion()">Entrar</button>
+        <button class="btn-secondary" onclick="registrarse()">Crear Cuenta</button>
+        <p id="mensaje"></p>
+    </div>
+
+    <!-- SECCIÓN DE USUARIO LOGUEADO -->
+    <div class="container" id="seccionUsuario">
+        <h2>¡Bienvenido!</h2>
+        <p>Has iniciado sesión correctamente con:</p>
+        <h3 id="emailUsuario"></h3>
+        <button onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
 
     <script>
-        // 1. PEGA AQUÍ LA CONFIGURACIÓN QUE COPIASTE EN EL PASO 1
+        // ⚠️ IMPORTANTE: Reemplaza este objeto con la configuración real de tu proyecto "crear web app global"
+        // La encuentras en Firebase: Configuración del proyecto > Tus apps > Config de SDK
         const firebaseConfig = {
-            apiKey: "TU_API_KEY",
-            authDomain: "tu-proyecto.firebaseapp.com",
-            projectId: "tu-proyecto-id",
-            storageBucket: "tu-proyecto.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:abcdef"
+            apiKey: "PEGA_TU_API_KEY_AQUI",
+            authDomain: "crear-web-app-global.firebaseapp.com", // Ajusta si tu dominio es diferente
+            projectId: "crear-web-app-global",
+            storageBucket: "crear-web-app-global.appspot.com",
+            messagingSenderId: "PEGA_TU_ID_AQUI",
+            appId: "PEGA_TU_APP_ID_AQUI"
         };
 
-        // 2. Inicializar Firebase
+        // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const auth = firebase.auth();
 
-        // 3. Función para GUARDAR datos
-        function guardarDato() {
-            const nombre = document.getElementById('nombreInput').value;
-            if(nombre === "") return;
+        // Referencias a los elementos del DOM
+        const seccionLogin = document.getElementById('seccionLogin');
+        const seccionUsuario = document.getElementById('seccionUsuario');
+        const mensaje = document.getElementById('mensaje');
 
-            db.collection("usuarios").add({
-                nombre: nombre,
-                fecha: new Date()
-            })
-            .then(() => {
-                console.log("Dato guardado!");
-                document.getElementById('nombreInput').value = "";
-                leerDatos(); // Refrescar la lista
-            });
-        }
+        // Función para INICIAR SESIÓN
+        function iniciarSesion() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-        // 4. Función para LEER datos
-        function leerDatos() {
-            const lista = document.getElementById('listaDatos');
-            lista.innerHTML = ""; // Limpiar lista actual
-
-            db.collection("usuarios").orderBy("fecha", "desc").get()
-            .then((querySnapshot) => {
-                querySnapshot.forEach((doc) => {
-                    const li = document.createElement('li');
-                    li.textContent = doc.data().nombre;
-                    lista.appendChild(li);
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    mensaje.style.color = "green";
+                    mensaje.innerText = "¡Login exitoso!";
+                })
+                .catch((error) => {
+                    mensaje.style.color = "red";
+                    mensaje.innerText = "Error: " + error.message;
                 });
+        }
+
+        // Función para REGISTRARSE
+        function registrarse() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if(password.length < 6) {
+                mensaje.style.color = "red";
+                mensaje.innerText = "La contraseña debe tener al menos 6 caracteres.";
+                return;
+            }
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    mensaje.style.color = "green";
+                    mensaje.innerText = "¡Cuenta creada exitosamente!";
+                })
+                .catch((error) => {
+                    mensaje.style.color = "red";
+                    mensaje.innerText = "Error al registrar: " + error.message;
+                });
+        }
+
+        // Función para CERRAR SESIÓN
+        function cerrarSesion() {
+            auth.signOut().then(() => {
+                console.log("Sesión cerrada");
             });
         }
 
-        // Cargar datos al iniciar la página
-        leerDatos();
+        // Observador de estado de autenticación (Controla qué sección mostrar)
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Usuario logueado
+                seccionLogin.style.display = 'none';
+                seccionUsuario.style.display = 'block';
+                document.getElementById('emailUsuario').innerText = user.email;
+                mensaje.innerText = ""; // Limpiar mensajes
+            } else {
+                // Usuario no logueado
+                seccionLogin.style.display = 'block';
+                seccionUsuario.style.display = 'none';
+            }
+        });
     </script>
 </body>
 </html>
