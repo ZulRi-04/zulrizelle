@@ -20,54 +20,65 @@
             background-color: #f0f2f5; 
             display: flex; 
             flex-direction: column;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh; 
             padding: 20px;
         }
 
-        /* Header con logo y texto de bienvenida */
+        .auth-wrapper {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Header centrado: logo + texto + zelle */
         .header-brand {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 30px;
+            text-align: center;
+            margin-bottom: 8px;
             padding: 10px 5px;
+            gap: 12px;
         }
+
         .header-brand .logo {
-            width: 55px;
-            height: 55px;
+            width: 110px;
+            height: 110px;
             object-fit: contain;
-            flex-shrink: 0;
         }
+
         .header-brand .brand-text {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: #1a1a1a;
             letter-spacing: -0.3px;
+            line-height: 1.3;
         }
         .header-brand .brand-text span {
-            color: #d4a017; /* Dorado a juego con el logo */
+            color: #d4a017;
         }
 
-        /* Contenedor central para la card */
-        .main-content {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+        /* Logo de Zelle */
+        .zelle-logo {
+            width: 100px;
+            height: auto;
+            object-fit: contain;
         }
 
         .card { 
             background: white; 
             width: 100%; 
-            max-width: 100%;
             border-radius: 12px; 
             box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
             overflow: hidden;
-            align-self: center;
         }
 
         .form-container {
-            padding: 20px;
+            padding: 25px;
         }
 
         .subtitle {
@@ -215,41 +226,41 @@
 
         .hidden { display: none !important; }
 
-        /* Responsive para escritorio */
         @media (min-width: 768px) {
-            body { padding: 30px 40px; }
-            .header-brand { margin-bottom: 40px; }
-            .header-brand .logo { width: 65px; height: 65px; }
-            .header-brand .brand-text { font-size: 1.5rem; }
-            .card { max-width: 450px; }
+            body { padding: 40px; }
+            .header-brand .logo { width: 130px; height: 130px; }
+            .header-brand .brand-text { font-size: 1.35rem; }
+            .zelle-logo { width: 120px; }
             .form-container { padding: 30px; }
             .row { flex-direction: row; }
             .row .input-group { flex: 1; margin-bottom: 0; }
         }
 
-        /* Responsive para móvil pequeño */
         @media (max-width: 480px) {
-            .header-brand .logo { width: 45px; height: 45px; }
+            body { padding: 15px; }
+            .header-brand .logo { width: 95px; height: 95px; }
             .header-brand .brand-text { font-size: 1.05rem; }
+            .zelle-logo { width: 90px; }
+            .header-brand { gap: 10px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- HEADER CON LOGO Y TEXTO DE BIENVENIDA (fuera del recuadro blanco) -->
-    <div class="header-brand">
-        <img src="logo.png" alt="ZulRi Logo" class="logo">
-        <div class="brand-text">Bienvenido a tu <span>verificador de confianza</span></div>
-    </div>
+    <div class="auth-wrapper">
+        
+        <!-- HEADER CENTRADO: Logo + Texto + Zelle -->
+        <div class="header-brand">
+            <img src="logo.png" alt="ZulRi Logo" class="logo">
+            <div class="brand-text">Bienvenido a tu <span>verificador de confianza</span></div>
+            <!-- Logo de Zelle -->
+            <img src="https://logowik.com/content/uploads/images/t_zelle6779.logowik.com.webp" alt="Zelle" class="zelle-logo">
+        </div>
 
-    <!-- CONTENIDO CENTRAL -->
-    <div class="main-content">
+        <!-- CARD BLANCO -->
         <div class="card">
             <div class="form-container">
                 
-                <!-- ============================================ -->
-                <!-- FORMULARIO DE LOGIN                          -->
-                <!-- ============================================ -->
                 <div id="form-login">
                     <p class="subtitle">Inicia sesión para continuar</p>
                     
@@ -283,9 +294,6 @@
                     </div>
                 </div>
 
-                <!-- ============================================ -->
-                <!-- PASO 2 GOOGLE: Completar datos + contraseña  -->
-                <!-- ============================================ -->
                 <div id="form-google-paso2" class="hidden">
                     <p class="subtitle">Tu correo ya está verificado. Solo necesitamos algunos datos más.</p>
                     
