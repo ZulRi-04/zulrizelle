@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - Web App Global</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; margin: 0; padding: 0; }
+        .navbar { background-color: #007bff; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { margin: 0; font-size: 1.5rem; }
+        .btn-logout { background-color: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .btn-logout:hover { background-color: #c82333; }
+        .container { max-width: 800px; margin: 2rem auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Barra de navegación superior -->
+    <div class="navbar">
+        <h1>Web App Global</h1>
+        <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
+    </div>
+
+    <!-- Contenido protegido (se muestra solo si está logueado) -->
+    <div class="container hidden" id="contenidoPrivado">
+        <h2>¡Bienvenido al Panel de Control!</h2>
+        <p>Has iniciado sesión correctamente como:</p>
+        <h3 id="emailUsuario" style="color: #007bff; word-break: break-all;"></h3>
+        
+        <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+        
+        <p>Aquí irá el contenido de tu base de datos, formularios o herramientas de la aplicación.</p>
+        <!-- Aquí agregaremos más adelante la conexión a Firestore/Realtime Database -->
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBveW42iYdCHka8Q_pFlHTR2E6ou7DTek0",
+            authDomain: "zulri-1c741.firebaseapp.com",
+            databaseURL: "https://zulri-1c741-default-rtdb.firebaseio.com",
+            projectId: "zulri-1c741",
+            storageBucket: "zulri-1c741.firebasestorage.app",
+            messagingSenderId: "694828053364",
+            appId: "1:694828053364:web:b617344a0cfaefc954f221"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // 1. PROTECCIÓN: Si NO está logueado, expulsarlo al index
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                // No hay usuario, redirigir al login
+                window.location.href = "index.html";
+            } else {
+                // Hay usuario, mostrar el contenido privado
+                document.getElementById('contenidoPrivado').classList.remove('hidden');
+                document.getElementById('emailUsuario').innerText = user.email;
+            }
+        });
+
+        // 2. Función para cerrar sesión
+        function cerrarSesion() {
+            auth.signOut().then(() => {
+                // Al cerrar sesión, el onAuthStateChanged detectará el cambio 
+                // y automáticamente nos mandará de vuelta al index.html
+                window.location.href = "index.html";
+            }).catch((error) => {
+                console.error("Error al cerrar sesión:", error);
+            });
+        }
+    </script>
+</body>
+</html>
