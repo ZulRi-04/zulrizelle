@@ -9,6 +9,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     
+    <!-- Librería intl-tel-input para selector de país con banderas -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         
@@ -74,6 +78,15 @@
             box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
         }
 
+        /* Ajustes para intl-tel-input */
+        .iti { width: 100%; }
+        .iti__flag-container {
+            border-radius: 8px 0 0 8px;
+        }
+        .input-group input#telefono-input {
+            padding-left: 90px;
+        }
+
         .toggle-password {
             position: absolute;
             right: 12px;
@@ -87,6 +100,7 @@
             justify-content: center;
             color: #666;
             transition: color 0.3s;
+            z-index: 10;
         }
         .toggle-password:hover {
             color: #007bff;
@@ -185,6 +199,16 @@
             color: #666;
         }
 
+        .alert-info {
+            background-color: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #004085;
+            margin-bottom: 15px;
+        }
+
         #mensaje {
             text-align: center;
             margin-top: 15px;
@@ -256,13 +280,18 @@
             <!-- FORMULARIO DE RECUPERAR CONTRASEÑA           -->
             <!-- ============================================ -->
             <div id="form-recuperar" class="hidden">
-                <h2>Recuperar Cuenta</h2>
-                <p class="subtitle">Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.</p>
-                <div class="input-group">
-                    <label>Correo electrónico</label>
-                    <input type="email" id="recuperar-email" placeholder="tu@correo.com">
+                <h2>Recuperar Contraseña</h2>
+                <p class="subtitle">Ingresa tu correo de Google y te enviaremos un enlace para restablecer tu contraseña.</p>
+                
+                <div class="alert-info">
+                    💡 <strong>Nota:</strong> Si creaste tu cuenta con Google, recibirás un enlace en tu correo de Gmail para crear una nueva contraseña.
                 </div>
-                <button class="btn-primary" onclick="recuperarCuenta()">Enviar Enlace</button>
+                
+                <div class="input-group">
+                    <label>Correo electrónico (Gmail)</label>
+                    <input type="email" id="recuperar-email" placeholder="tu@gmail.com">
+                </div>
+                <button class="btn-primary" onclick="recuperarCuenta()">Enviar Enlace de Recuperación</button>
                 <button class="link-btn" onclick="volverAlLogin()">← Volver al inicio de sesión</button>
             </div>
 
@@ -292,10 +321,12 @@
                         <input type="text" id="g-apellido" placeholder="Tu apellido">
                     </div>
                 </div>
+                
                 <div class="input-group" style="margin-top: 15px;">
                     <label>Número de teléfono</label>
-                    <input type="tel" id="g-telefono" placeholder="Ej: +1 234 567 8900">
+                    <input type="tel" id="telefono-input" placeholder="Selecciona tu país e ingresa el número">
                 </div>
+                
                 <div class="input-group">
                     <label>Contraseña</label>
                     <input type="password" id="g-password" placeholder="Mínimo 6 caracteres">
@@ -343,6 +374,7 @@
         const googleProvider = new firebase.auth.GoogleAuthProvider();
         
         let usuarioGoogleTemporal = null;
+        let telefonoInputInstance = null;
 
         // Al cargar la página, si ya está logueado y tiene datos completos, ir al dashboard
         auth.onAuthStateChanged((user) => {
@@ -429,7 +461,38 @@
             if (partes[0]) document.getElementById('g-nombre').value = partes[0];
             if (partes.length > 1) document.getElementById('g-apellido').value = partes.slice(1).join(' ');
             
+            // Inicializar el selector de teléfono con banderas
+            inicializarSelectorTelefono();
+            
             mostrarMensaje("");
+        }
+
+        // ============================================
+        // INICIALIZAR SELECTOR DE TELÉFONO CON BANDERAS
+        // ============================================
+        function inicializarSelectorTelefono() {
+            // Si ya existe una instancia, destruirla
+            if (telefonoInputInstance) {
+                telefonoInputInstance.destroy();
+            }
+
+            const input = document.getElementById('telefono-input');
+            
+            telefonoInputInstance = window.intlTelInput(input, {
+                initialCountry: "auto",
+                geoIpLookup: function(callback) {
+                    // Detectar país por IP
+                    fetch("https://ipapi.co/json/")
+                        .then(res => res.json())
+                        .then(data => callback(data.country_code))
+                        .catch(() => callback("us")); // Default a EE.UU. si falla
+                },
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
+                separateDialCode: true,
+                preferredCountries: ["es", "mx", "ar", "co", "cl", "pe", "ve", "us"],
+                autoPlaceholder: "polite",
+                formatOnDisplay: true
+            });
         }
 
         // ============================================
@@ -438,12 +501,17 @@
         function completarRegistroGoogle() {
             const nombre = document.getElementById('g-nombre').value.trim();
             const apellido = document.getElementById('g-apellido').value.trim();
-            const telefono = document.getElementById('g-telefono').value.trim();
             const password = document.getElementById('g-password').value;
             const confirm = document.getElementById('g-confirm').value;
 
+            // Obtener teléfono completo con código de país
+            const telefonoCompleto = telefonoInputInstance.getNumber();
+            const paisSeleccionado = telefonoInputInstance.getSelectedCountryData();
+            const codigoPais = paisSeleccionado.iso2;
+            const nombrePais = paisSeleccionado.name;
+
             if (!nombre || !apellido) return mostrarMensaje("Por favor, ingresa tu nombre y apellido.", "red");
-            if (!telefono) return mostrarMensaje("Por favor, ingresa tu número de teléfono.", "red");
+            if (!telefonoInputInstance.isValidNumber()) return mostrarMensaje("Por favor, ingresa un número de teléfono válido.", "red");
             if (password.length < 6) return mostrarMensaje("La contraseña debe tener al menos 6 caracteres.", "red");
             if (password !== confirm) return mostrarMensaje("Las contraseñas no coinciden.", "red");
 
@@ -456,7 +524,9 @@
                 nombre: nombre,
                 apellido: apellido,
                 email: user.email,
-                telefono: telefono,
+                telefono: telefonoCompleto,
+                codigoPais: codigoPais,
+                nombrePais: nombrePais,
                 foto: user.photoURL || "",
                 fechaRegistro: new Date().toISOString(),
                 metodoRegistro: 'google',
@@ -477,9 +547,9 @@
                 // Limpiar campos
                 document.getElementById('g-nombre').value = "";
                 document.getElementById('g-apellido').value = "";
-                document.getElementById('g-telefono').value = "";
                 document.getElementById('g-password').value = "";
                 document.getElementById('g-confirm').value = "";
+                if (telefonoInputInstance) telefonoInputInstance.setNumber("");
                 
                 // Volver al formulario de login
                 setTimeout(() => {
@@ -521,44 +591,41 @@
             auth.signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
                     const user = userCredential.user;
-                    
-                    if (!user.emailVerified) {
-                        auth.signOut();
-                        mostrarMensaje("Debes verificar tu correo. Revisa tu bandeja de entrada.", "orange");
-                        setTimeout(() => {
-                            if(confirm("¿Quieres que reenviemos el correo de verificación?")) {
-                                reenviarVerificacion(user);
-                            }
-                        }, 500);
-                    } else {
-                        mostrarMensaje("¡Inicio de sesión exitoso! Redirigiendo...", "green");
-                    }
+                    mostrarMensaje("¡Inicio de sesión exitoso! Redirigiendo...", "green");
                 })
                 .catch((error) => mostrarMensaje("Error: " + traducirError(error.code), "red"));
         }
 
-        // RECUPERAR CONTRASEÑA
+        // ============================================
+        // RECUPERAR CONTRASEÑA (Corregido para Google)
+        // ============================================
         function recuperarCuenta() {
-            const email = document.getElementById('recuperar-email').value;
+            const email = document.getElementById('recuperar-email').value.trim();
+            
             if (!email) return mostrarMensaje("Ingresa tu correo electrónico.", "red");
+            if (!email.toLowerCase().endsWith('@gmail.com') && !email.toLowerCase().includes('@')) {
+                return mostrarMensaje("Por favor, ingresa un correo válido.", "red");
+            }
 
-            mostrarMensaje("Enviando enlace...", "blue");
+            mostrarMensaje("Enviando enlace de recuperación...", "blue");
 
             auth.sendPasswordResetEmail(email)
                 .then(() => {
-                    mostrarMensaje("¡Correo enviado! Revisa tu bandeja de entrada.", "green");
+                    mostrarMensaje("✅ ¡Correo enviado! Revisa tu bandeja de entrada de Gmail. Si no lo ves, revisa la carpeta de Spam.", "green");
                     document.getElementById('recuperar-email').value = "";
                 })
                 .catch((error) => {
-                    mostrarMensaje("Error: " + traducirError(error.code), "red");
+                    let errorMsg = traducirError(error.code);
+                    
+                    // Manejo especial para cuentas solo de Google sin contraseña
+                    if (error.code === 'auth/user-not-found') {
+                        errorMsg = "No encontramos una cuenta con ese correo. Verifica que hayas completado el registro con Google.";
+                    } else if (error.message.includes('password')) {
+                        errorMsg = "Esta cuenta fue creada solo con Google. Inicia sesión directamente con el botón 'Crear cuenta con Google' o completa tu registro primero.";
+                    }
+                    
+                    mostrarMensaje("Error: " + errorMsg, "red");
                 });
-        }
-
-        // REENVIAR CORREO DE VERIFICACIÓN
-        function reenviarVerificacion(user) {
-            user.sendEmailVerification()
-                .then(() => mostrarMensaje("Correo de verificación reenviado.", "green"))
-                .catch((error) => mostrarMensaje("Error al reenviar: " + error.message, "red"));
         }
 
         // UTILIDADES
