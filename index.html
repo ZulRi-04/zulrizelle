@@ -92,14 +92,13 @@
             outline: none;
             border-color: #007bff !important;
         }
-        .input-group input#telefono-input {
-            padding-left: 90px;
-        }
 
+        /* Botón de ojo para mostrar/ocultar contraseña */
         .toggle-password {
             position: absolute;
             right: 12px;
-            top: 38px;
+            top: 50%;
+            transform: translateY(-50%);
             background: none;
             border: none;
             cursor: pointer;
@@ -110,6 +109,7 @@
             color: #666;
             transition: color 0.3s;
             z-index: 10;
+            margin-top: 12px;
         }
         .toggle-password:hover {
             color: #007bff;
@@ -292,23 +292,23 @@
 
                 <div class="row">
                     <div class="input-group">
-                        <label>Nombre</label>
-                        <input type="text" id="g-nombre" placeholder="Tu nombre">
+                        <label>Nombre *</label>
+                        <input type="text" id="g-nombre" placeholder="Tu nombre" required>
                     </div>
                     <div class="input-group">
-                        <label>Apellido</label>
-                        <input type="text" id="g-apellido" placeholder="Tu apellido">
+                        <label>Apellido *</label>
+                        <input type="text" id="g-apellido" placeholder="Tu apellido" required>
                     </div>
                 </div>
                 
                 <div class="input-group" style="margin-top: 15px;">
-                    <label>Número de teléfono</label>
-                    <input type="tel" id="telefono-input" placeholder="Selecciona tu país e ingresa el número">
+                    <label>Número de teléfono *</label>
+                    <input type="tel" id="telefono-input" placeholder="Selecciona tu país e ingresa el número" required>
                 </div>
                 
                 <div class="input-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="g-password" placeholder="Mínimo 6 caracteres">
+                    <label>Contraseña *</label>
+                    <input type="password" id="g-password" placeholder="Mínimo 6 caracteres" required>
                     <button type="button" class="toggle-password" onclick="togglePassword('g-password', this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -317,8 +317,8 @@
                     </button>
                 </div>
                 <div class="input-group">
-                    <label>Confirmar Contraseña</label>
-                    <input type="password" id="g-confirm" placeholder="Repite la contraseña">
+                    <label>Confirmar Contraseña *</label>
+                    <input type="password" id="g-confirm" placeholder="Repite la contraseña" required>
                     <button type="button" class="toggle-password" onclick="togglePassword('g-confirm', this)">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
@@ -487,7 +487,7 @@
         }
 
         // ============================================
-        // PASO 3: COMPLETAR REGISTRO GOOGLE
+        // PASO 3: COMPLETAR REGISTRO GOOGLE (con validación estricta)
         // ============================================
         function completarRegistroGoogle() {
             const nombre = document.getElementById('g-nombre').value.trim();
@@ -495,15 +495,21 @@
             const password = document.getElementById('g-password').value;
             const confirm = document.getElementById('g-confirm').value;
 
+            // Validación estricta de campos obligatorios
+            if (!nombre) return mostrarMensaje("El nombre es obligatorio.", "red");
+            if (!apellido) return mostrarMensaje("El apellido es obligatorio.", "red");
+            if (!telefonoInputInstance || !telefonoInputInstance.getNumber()) return mostrarMensaje("El número de teléfono es obligatorio.", "red");
+            if (!telefonoInputInstance.isValidNumber()) return mostrarMensaje("Por favor, ingresa un número de teléfono válido.", "red");
+            if (!password) return mostrarMensaje("La contraseña es obligatoria.", "red");
+            if (password.length < 6) return mostrarMensaje("La contraseña debe tener al menos 6 caracteres.", "red");
+            if (!confirm) return mostrarMensaje("Debes confirmar la contraseña.", "red");
+            if (password !== confirm) return mostrarMensaje("Las contraseñas no coinciden.", "red");
+
+            // Obtener teléfono completo con código de país
             const telefonoCompleto = telefonoInputInstance.getNumber();
             const paisSeleccionado = telefonoInputInstance.getSelectedCountryData();
             const codigoPais = paisSeleccionado.iso2;
             const nombrePais = paisSeleccionado.name;
-
-            if (!nombre || !apellido) return mostrarMensaje("Por favor, ingresa tu nombre y apellido.", "red");
-            if (!telefonoInputInstance.isValidNumber()) return mostrarMensaje("Por favor, ingresa un número de teléfono válido.", "red");
-            if (password.length < 6) return mostrarMensaje("La contraseña debe tener al menos 6 caracteres.", "red");
-            if (password !== confirm) return mostrarMensaje("Las contraseñas no coinciden.", "red");
 
             mostrarMensaje("Guardando datos...", "blue");
 
