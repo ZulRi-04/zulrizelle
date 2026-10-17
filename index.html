@@ -17,7 +17,7 @@
         
         body { 
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background-color: #D6EAF8; 
+            background-color: #AED6F1; 
             display: flex; 
             flex-direction: column;
             justify-content: center;
@@ -65,6 +65,7 @@
             width: 100px;
             height: auto;
             object-fit: contain;
+            border-radius: 8px;
         }
 
         .card { 
@@ -111,7 +112,6 @@
             box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
         }
 
-        /* Ajustes para intl-tel-input con búsqueda */
         .iti { width: 100%; }
         .iti__search-input {
             padding: 8px 35px 8px 12px !important;
@@ -125,7 +125,6 @@
             outline: none;
             border-color: #007bff !important;
         }
-        /* Icono de lupa en el search box */
         .iti__search-box {
             position: relative;
         }
@@ -266,7 +265,7 @@
         <div class="header-brand">
             <img src="logo.png" alt="ZulRi Logo" class="logo">
             <div class="brand-text">Bienvenido a tu <span>verificador de confianza</span></div>
-            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Zelle_logo.svg/512px-Zelle_logo.svg.png" alt="Zelle" class="zelle-logo">
+            <img src="https://logowik.com/content/uploads/images/zelle7181.jpg" alt="Zelle" class="zelle-logo">
         </div>
 
         <div class="card">
@@ -325,6 +324,12 @@
                             <label>Apellido *</label>
                             <input type="text" id="g-apellido" placeholder="Tu apellido" required>
                         </div>
+                    </div>
+
+                    <!-- NUEVO CAMPO: ALIAS (OPCIONAL) -->
+                    <div class="input-group">
+                        <label>Alias (Opcional)</label>
+                        <input type="text" id="g-alias" placeholder="Ej: JuanPerez99 (Se mostrará en tu perfil)">
                     </div>
                     
                     <div class="input-group" style="margin-top: 15px;">
@@ -471,18 +476,28 @@
             });
         }
 
-        // Función para verificar si el teléfono ya existe
+        // Verificar si el teléfono ya existe
         async function telefonoExiste(telefono) {
             const snapshot = await db.ref('usuarios').orderByChild('telefono').equalTo(telefono).once('value');
             return snapshot.exists();
         }
 
-        function completarRegistroGoogle() {
+        // Verificar si el alias ya existe (NUEVO)
+        async function aliasExiste(alias) {
+            if (!alias) return false;
+            const snapshot = await db.ref('usuarios').orderByChild('alias').equalTo(alias).once('value');
+            return snapshot.exists();
+        }
+
+        // Función asíncrona para manejar todas las validaciones en orden
+        async function completarRegistroGoogle() {
             const nombre = document.getElementById('g-nombre').value.trim();
             const apellido = document.getElementById('g-apellido').value.trim();
+            const alias = document.getElementById('g-alias').value.trim();
             const password = document.getElementById('g-password').value;
             const confirm = document.getElementById('g-confirm').value;
 
+            // Validaciones obligatorias
             if (!nombre) return mostrarMensaje("El nombre es obligatorio.", "red");
             if (!apellido) return mostrarMensaje("El apellido es obligatorio.", "red");
             if (!telefonoInputInstance || !telefonoInputInstance.getNumber()) return mostrarMensaje("El número de teléfono es obligatorio.", "red");
@@ -495,49 +510,63 @@
             const telefonoCompleto = telefonoInputInstance.getNumber();
             const paisSeleccionado = telefonoInputInstance.getSelectedCountryData();
 
-            mostrarMensaje("Verificando teléfono...", "blue");
+            try {
+                mostrarMensaje("Verificando datos...", "blue");
 
-            // Verificar si el teléfono ya está registrado
-            telefonoExiste(telefonoCompleto)
-                .then((existe) => {
-                    if (existe) {
-                        return mostrarMensaje("Este número de teléfono ya está registrado. Usa otro número o inicia sesión.", "red");
+                // 1. Verificar teléfono único
+                if (await telefonoExiste(telefonoCompleto)) {
+                    return mostrarMensaje("Este número de teléfono ya está registrado. Usa otro o inicia sesión.", "red");
+                }
+
+                // 2. Verificar alias único (solo si el usuario escribió uno)
+                if (alias) {
+                    if (await aliasExiste(alias)) {
+                        return mostrarMensaje("Este alias ya está en uso. Por favor, elige otro.", "red");
                     }
+                }
 
-                    // Si no existe, continuar con el registro
-                    mostrarMensaje("Guardando datos...", "blue");
-                    const user = usuarioGoogleTemporal;
+                // 3. Guardar datos en Firebase
+                mostrarMensaje("Guardando datos...", "blue");
+                const user = usuarioGoogleTemporal;
 
-                    return db.ref('usuarios/' + user.uid).set({
-                        nombre, apellido,
-                        email: user.email,
-                        telefono: telefonoCompleto,
-                        codigoPais: paisSeleccionado.iso2,
-                        nombrePais: paisSeleccionado.name,
-                        foto: user.photoURL || "",
-                        fechaRegistro: new Date().toISOString(),
-                        metodoRegistro: 'google',
-                        correoVerificado: true
-                    })
-                    .then(() => user.updatePassword(password))
-                    .then(() => auth.signOut())
-                    .then(() => {
-                        usuarioGoogleTemporal = null;
-                        mostrarMensaje("¡Cuenta creada exitosamente! Ahora inicia sesión.", "green");
-                        document.getElementById('g-nombre').value = "";
-                        document.getElementById('g-apellido').value = "";
-                        document.getElementById('g-password').value = "";
-                        document.getElementById('g-confirm').value = "";
-                        if (telefonoInputInstance) telefonoInputInstance.setNumber("");
-                        setTimeout(() => {
-                            document.getElementById('form-google-paso2').classList.add('hidden');
-                            document.getElementById('form-login').classList.remove('hidden');
-                            document.getElementById('login-email').value = user.email;
-                            mostrarMensaje("");
-                        }, 2000);
-                    });
-                })
-                .catch((error) => mostrarMensaje("Error: " + error.message, "red"));
+                await db.ref('usuarios/' + user.uid).set({
+                    nombre,
+                    apellido,
+                    alias: alias || "", // Guarda vacío si no se proporcionó
+                    email: user.email,
+                    telefono: telefonoCompleto,
+                    codigoPais: paisSeleccionado.iso2,
+                    nombrePais: paisSeleccionado.name,
+                    foto: user.photoURL || "",
+                    fechaRegistro: new Date().toISOString(),
+                    metodoRegistro: 'google',
+                    correoVerificado: true
+                });
+
+                await user.updatePassword(password);
+                await auth.signOut();
+
+                usuarioGoogleTemporal = null;
+                mostrarMensaje("¡Cuenta creada exitosamente! Ahora inicia sesión.", "green");
+
+                // Limpiar campos
+                document.getElementById('g-nombre').value = "";
+                document.getElementById('g-apellido').value = "";
+                document.getElementById('g-alias').value = "";
+                document.getElementById('g-password').value = "";
+                document.getElementById('g-confirm').value = "";
+                if (telefonoInputInstance) telefonoInputInstance.setNumber("");
+
+                setTimeout(() => {
+                    document.getElementById('form-google-paso2').classList.add('hidden');
+                    document.getElementById('form-login').classList.remove('hidden');
+                    document.getElementById('login-email').value = user.email;
+                    mostrarMensaje("");
+                }, 2000);
+
+            } catch (error) {
+                mostrarMensaje("Error: " + error.message, "red");
+            }
         }
 
         function cancelarRegistroGoogle() {
