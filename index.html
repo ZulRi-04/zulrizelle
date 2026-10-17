@@ -44,248 +44,58 @@
             gap: 12px;
         }
 
-        .header-brand .logo {
-            width: 110px;
-            height: 110px;
-            object-fit: contain;
-        }
+        .header-brand .logo { width: 110px; height: 110px; object-fit: contain; }
+        .header-brand .brand-text { font-size: 1.2rem; font-weight: 700; color: #1a1a1a; letter-spacing: -0.3px; line-height: 1.3; }
+        .header-brand .brand-text span { color: #d4a017; }
+        .zelle-logo { width: 100px; height: auto; object-fit: contain; border-radius: 8px; }
 
-        .header-brand .brand-text {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #1a1a1a;
-            letter-spacing: -0.3px;
-            line-height: 1.3;
-        }
-        .header-brand .brand-text span {
-            color: #d4a017;
-        }
+        .card { background: white; width: 100%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
+        .form-container { padding: 25px; }
+        .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
 
-        .zelle-logo {
-            width: 100px;
-            height: auto;
-            object-fit: contain;
-            border-radius: 8px;
-        }
-
-        .card { 
-            background: white; 
-            width: 100%; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
-            overflow: hidden;
-        }
-
-        .form-container {
-            padding: 25px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-            position: relative;
-        }
-        .input-group label {
-            display: block;
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        .input-group input {
-            width: 100%;
-            padding: 12px 45px 12px 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border 0.3s;
-        }
-        .input-group input:focus {
-            outline: none;
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
-        }
+        .input-group { margin-bottom: 15px; position: relative; }
+        .input-group label { display: block; font-size: 14px; color: #555; margin-bottom: 5px; font-weight: 500; }
+        .input-group input { width: 100%; padding: 12px 45px 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; transition: border 0.3s; }
+        .input-group input:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
 
         .iti { width: 100%; }
-        .iti__search-input {
-            padding: 8px 35px 8px 12px !important;
-            border: 1px solid #ddd !important;
-            border-radius: 6px !important;
-            font-size: 14px !important;
-            margin: 8px !important;
-            width: calc(100% - 16px) !important;
-        }
-        .iti__search-input:focus {
-            outline: none;
-            border-color: #007bff !important;
-        }
-        .iti__search-box {
-            position: relative;
-        }
-        .iti__search-box::before {
-            content: "🔍";
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-            pointer-events: none;
-            z-index: 100;
-            opacity: 0.5;
-        }
+        .iti__search-input { padding: 8px 35px 8px 12px !important; border: 1px solid #ddd !important; border-radius: 6px !important; font-size: 14px !important; margin: 8px !important; width: calc(100% - 16px) !important; }
+        .iti__search-input:focus { outline: none; border-color: #007bff !important; }
+        .iti__search-box { position: relative; }
+        .iti__search-box::before { content: "🔍"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; z-index: 100; opacity: 0.5; }
 
-        .toggle-password {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #666;
-            transition: color 0.3s;
-            z-index: 10;
-            margin-top: 12px;
-        }
+        .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; color: #666; transition: color 0.3s; z-index: 10; margin-top: 12px; }
         .toggle-password:hover { color: #007bff; }
         .toggle-password svg { width: 20px; height: 20px; }
 
-        .row {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+        .row { display: flex; flex-direction: column; gap: 15px; }
 
-        button.btn-primary {
-            width: 100%;
-            padding: 14px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 10px;
-            transition: background 0.3s;
-        }
+        button.btn-primary { width: 100%; padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 10px; transition: background 0.3s; }
         button.btn-primary:hover { background-color: #0056b3; }
         button.btn-primary:disabled { background-color: #a0cfff; cursor: not-allowed; }
 
-        .btn-whatsapp {
-            width: 100%;
-            padding: 12px;
-            background-color: #25D366;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            margin-top: 10px;
-            transition: background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        .btn-whatsapp:hover { background-color: #128C7E; }
-        .btn-whatsapp svg { width: 20px; height: 20px; }
+        .btn-sms { width: 100%; padding: 12px; background-color: #25D366; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; margin-top: 10px; transition: background 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-sms:hover { background-color: #128C7E; }
 
-        .btn-google {
-            width: 100%;
-            padding: 12px;
-            background-color: white;
-            color: #333;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 600;
-            margin-top: 10px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+        .btn-google { width: 100%; padding: 12px; background-color: white; color: #333; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; margin-top: 10px; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-google:hover { background-color: #f8f9fa; border-color: #bbb; }
         .btn-google svg { width: 20px; height: 20px; }
 
-        .link-btn {
-            display: block;
-            text-align: center;
-            margin-top: 15px;
-            color: #007bff;
-            background: none;
-            border: none;
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: underline;
-            width: 100%;
-        }
+        .link-btn { display: block; text-align: center; margin-top: 15px; color: #007bff; background: none; border: none; font-size: 14px; cursor: pointer; text-decoration: underline; width: 100%; }
         .link-btn:hover { color: #0056b3; }
 
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
+        .user-info { display: flex; align-items: center; gap: 12px; background: #f8f9fa; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
         .user-info img { width: 40px; height: 40px; border-radius: 50%; }
         .user-info .info-text { flex: 1; }
         .user-info .info-text .name { font-weight: 600; font-size: 14px; color: #333; }
         .user-info .info-text .email { font-size: 12px; color: #666; }
 
-        .verification-box {
-            background: #f8f9fa;
-            border: 2px solid #25D366;
-            border-radius: 8px;
-            padding: 15px;
-            margin: 15px 0;
-        }
-        .verification-box h4 {
-            color: #128C7E;
-            margin-bottom: 10px;
-            font-size: 14px;
-        }
-        .code-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 18px;
-            text-align: center;
-            letter-spacing: 5px;
-            font-weight: bold;
-        }
-        .code-input:focus {
-            outline: none;
-            border-color: #25D366;
-            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
-        }
+        .verification-box { background: #f0f8ff; border: 2px solid #007bff; border-radius: 8px; padding: 15px; margin: 15px 0; }
+        .verification-box h4 { color: #0056b3; margin-bottom: 10px; font-size: 14px; text-align: center; }
+        .code-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 18px; text-align: center; letter-spacing: 5px; font-weight: bold; }
+        .code-input:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
 
-        #mensaje {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 14px;
-            min-height: 20px;
-            font-weight: 500;
-        }
-
+        #mensaje { text-align: center; margin-top: 15px; font-size: 14px; min-height: 20px; font-weight: 500; }
         .hidden { display: none !important; }
 
         @media (min-width: 768px) {
@@ -297,7 +107,6 @@
             .row { flex-direction: row; }
             .row .input-group { flex: 1; margin-bottom: 0; }
         }
-
         @media (max-width: 480px) {
             body { padding: 15px; }
             .header-brand .logo { width: 95px; height: 95px; }
@@ -310,7 +119,6 @@
 <body>
 
     <div class="auth-wrapper">
-        
         <div class="header-brand">
             <img src="logo.png" alt="ZulRi Logo" class="logo">
             <div class="brand-text">Bienvenido a tu <span>verificador de confianza</span></div>
@@ -322,7 +130,6 @@
                 
                 <div id="form-login">
                     <p class="subtitle">Inicia sesión para continuar</p>
-                    
                     <div class="input-group">
                         <label>Correo electrónico</label>
                         <input type="email" id="login-email" placeholder="tu@correo.com">
@@ -331,23 +138,14 @@
                         <label>Contraseña</label>
                         <input type="password" id="login-password" placeholder="••••••••">
                         <button type="button" class="toggle-password" onclick="togglePassword('login-password', this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
                     </div>
                     <button class="btn-primary" onclick="iniciarSesion()">Entrar</button>
-                    
                     <div style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
                         <p class="subtitle" style="margin-bottom: 10px;">¿No tienes cuenta?</p>
                         <button class="btn-google" onclick="iniciarConGoogle()">
-                            <svg viewBox="0 0 24 24">
-                                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                            </svg>
+                            <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                             Crear cuenta con Google
                         </button>
                     </div>
@@ -385,43 +183,37 @@
                         <input type="tel" id="telefono-input" placeholder="Selecciona tu país e ingresa el número" required>
                     </div>
 
-                    <!-- VERIFICACIÓN DE TELÉFONO POR WHATSAPP -->
+                    <!-- Contenedor invisible para el reCAPTCHA de Google (Requerido por Firebase) -->
+                    <div id="recaptcha-container"></div>
+
+                    <!-- CAJA DE VERIFICACIÓN SMS -->
                     <div id="verificacion-telefono" class="verification-box hidden">
-                        <h4>📱 Verificación por WhatsApp</h4>
-                        <p style="font-size: 13px; color: #666; margin-bottom: 10px;">
-                            Ingresa el código de 6 dígitos que recibiste por WhatsApp
+                        <h4> Verificación por SMS</h4>
+                        <p style="font-size: 13px; color: #666; margin-bottom: 10px; text-align: center;">
+                            Ingresa el código de 6 dígitos que recibiste por SMS
                         </p>
-                        <input type="text" id="codigo-whatsapp" class="code-input" placeholder="______" maxlength="6">
-                        <button class="btn-primary" style="background-color: #25D366; margin-top: 10px;" onclick="verificarCodigoWhatsApp()">
+                        <input type="text" id="codigo-sms" class="code-input" placeholder="______" maxlength="6">
+                        <button class="btn-primary" style="margin-top: 10px;" onclick="verificarCodigoSMS()">
                             Verificar Código
                         </button>
                     </div>
                     
-                    <button class="btn-whatsapp" onclick="enviarCodigoWhatsApp()">
-                        <svg viewBox="0 0 24 24" fill="white">
-                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                        </svg>
-                        Enviar código por WhatsApp
+                    <button class="btn-sms" onclick="enviarCodigoSMS()" id="btn-enviar-sms">
+                        📩 Enviar código por SMS
                     </button>
                     
-                    <div class="input-group">
+                    <div class="input-group" style="margin-top: 15px;">
                         <label>Contraseña *</label>
                         <input type="password" id="g-password" placeholder="Mínimo 6 caracteres" required>
                         <button type="button" class="toggle-password" onclick="togglePassword('g-password', this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
                     </div>
                     <div class="input-group">
                         <label>Confirmar Contraseña *</label>
                         <input type="password" id="g-confirm" placeholder="Repite la contraseña" required>
                         <button type="button" class="toggle-password" onclick="togglePassword('g-confirm', this)">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                                <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                         </button>
                     </div>
                     
@@ -447,16 +239,24 @@
             appId: "1:694828053364:web:b617344a0cfaefc954f221"
         };
 
+        // Inicializamos la app principal
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
+        
+        // TRUCO PROFESIONAL: Creamos una segunda instancia de Firebase solo para el SMS
+        // Esto evita que la verificación por SMS cierre la sesión de Google
+        const secondaryApp = firebase.initializeApp(firebaseConfig, "Secondary");
+        const secondaryAuth = secondaryApp.auth();
+
         const mensaje = document.getElementById('mensaje');
         const googleProvider = new firebase.auth.GoogleAuthProvider();
         
         let usuarioGoogleTemporal = null;
         let telefonoInputInstance = null;
-        let codigoGenerado = null;
         let telefonoVerificado = false;
+        let confirmationResult = null; // Guardará el resultado del SMS
+        let recaptchaVerifier = null;
 
         auth.onAuthStateChanged((user) => {
             if (user) {
@@ -471,22 +271,10 @@
 
         function togglePassword(inputId, button) {
             const input = document.getElementById(inputId);
-            const eyeOpen = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-            </svg>`;
-            const eyeClosed = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-                <line x1="1" y1="1" x2="23" y2="23"></line>
-            </svg>`;
-
-            if (input.type === "password") {
-                input.type = "text";
-                button.innerHTML = eyeClosed;
-            } else {
-                input.type = "password";
-                button.innerHTML = eyeOpen;
-            }
+            const eyeOpen = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+            const eyeClosed = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+            if (input.type === "password") { input.type = "text"; button.innerHTML = eyeClosed; } 
+            else { input.type = "password"; button.innerHTML = eyeOpen; }
         }
 
         function iniciarConGoogle() {
@@ -527,15 +315,8 @@
             telefonoInputInstance = window.intlTelInput(input, {
                 initialCountry: "auto",
                 geoIpLookup: function(callback) {
-                    fetch("https://ipapi.co/json/")
-                        .then(res => res.json())
-                        .then(data => { if (data.country_code) callback(data.country_code); else throw new Error(); })
-                        .catch(() => {
-                            fetch("http://ip-api.com/json/")
-                                .then(res => res.json())
-                                .then(data => { if (data.countryCode) callback(data.countryCode); else throw new Error(); })
-                                .catch(() => callback("es"));
-                        });
+                    fetch("https://ipapi.co/json/").then(res => res.json()).then(data => { if (data.country_code) callback(data.country_code); else throw new Error(); })
+                    .catch(() => { fetch("http://ip-api.com/json/").then(res => res.json()).then(data => { if (data.countryCode) callback(data.countryCode); else throw new Error(); }).catch(() => callback("es")); });
                 },
                 utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/utils.js",
                 separateDialCode: true,
@@ -547,72 +328,79 @@
             });
         }
 
-        // Generar código aleatorio de 6 dígitos
-        function generarCodigo() {
-            return Math.floor(100000 + Math.random() * 900000).toString();
-        }
-
-        // Enviar código por WhatsApp usando CallMeBot API
-        async function enviarCodigoWhatsApp() {
+        // ENVIAR CÓDIGO POR SMS (Usando Firebase Phone Auth)
+        function enviarCodigoSMS() {
             if (!telefonoInputInstance || !telefonoInputInstance.getNumber()) {
                 return mostrarMensaje("Por favor, ingresa un número de teléfono válido.", "red");
             }
             if (!telefonoInputInstance.isValidNumber()) {
-                return mostrarMensaje("Por favor, ingresa un número de teléfono válido.", "red");
+                return mostrarMensaje("El número de teléfono no es válido.", "red");
             }
 
             const telefonoCompleto = telefonoInputInstance.getNumber();
-            const numeroLimpio = telefonoCompleto.replace(/\D/g, ''); // Solo números
+            
+            mostrarMensaje("Enviando código por SMS...", "blue");
+            document.getElementById('btn-enviar-sms').disabled = true;
 
-            mostrarMensaje("Generando código...", "blue");
-
-            // Generar código de 6 dígitos
-            codigoGenerado = generarCodigo();
-            const mensaje = `Tu código de verificación ZulRi es: ${codigoGenerado}. No lo compartas con nadie.`;
-
-            try {
-                // Enviar mensaje por WhatsApp usando CallMeBot API
-                // NOTA: Para producción, necesitarías un servicio como Twilio WhatsApp API
-                // CallMeBot es gratuito pero requiere registro previo del número
-                const callmebotUrl = `https://api.callmebot.com/whatsapp.php?phone=${numeroLimpio}&text=${encodeURIComponent(mensaje)}&apikey=TU_API_KEY`;
-                
-                // Simulación para demostración (en producción usarías la API real)
-                console.log("Código generado:", codigoGenerado);
-                console.log("Mensaje a enviar:", mensaje);
-                
-                // Mostrar el código en consola para pruebas (eliminar en producción)
-                mostrarMensaje(`Código de prueba: ${codigoGenerado} (En producción se enviaría por WhatsApp)`, "blue");
-                
-                // Mostrar caja de verificación
-                document.getElementById('verificacion-telefono').classList.remove('hidden');
-                document.getElementById('codigo-whatsapp').focus();
-                
-            } catch (error) {
-                mostrarMensaje("Error al enviar el código: " + error.message, "red");
+            // Configurar reCAPTCHA invisible (Requerido por Firebase para evitar bots)
+            if (!recaptchaVerifier) {
+                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => {
+                        // reCAPTCHA resuelto
+                    }
+                }, secondaryAuth); // Usamos la instancia secundaria
             }
+
+            // Enviar el SMS
+            secondaryAuth.signInWithPhoneNumber(telefonoCompleto, recaptchaVerifier)
+                .then((result) => {
+                    confirmationResult = result;
+                    document.getElementById('verificacion-telefono').classList.remove('hidden');
+                    document.getElementById('codigo-sms').focus();
+                    mostrarMensaje("✅ Código SMS enviado. Revisa tu teléfono.", "green");
+                    document.getElementById('btn-enviar-sms').innerText = "📩 Reenviar código";
+                    document.getElementById('btn-enviar-sms').disabled = false;
+                })
+                .catch((error) => {
+                    console.error("Error SMS:", error);
+                    mostrarMensaje("Error al enviar SMS: " + error.message, "red");
+                    document.getElementById('btn-enviar-sms').disabled = false;
+                    // Resetear reCAPTCHA en caso de error
+                    if (recaptchaVerifier) {
+                        recaptchaVerifier.clear();
+                        recaptchaVerifier = null;
+                    }
+                });
         }
 
-        // Verificar código ingresado
-        function verificarCodigoWhatsApp() {
-            const codigoIngresado = document.getElementById('codigo-whatsapp').value.trim();
+        // VERIFICAR EL CÓDIGO SMS
+        function verificarCodigoSMS() {
+            const codigo = document.getElementById('codigo-sms').value.trim();
             
-            if (!codigoIngresado) {
-                return mostrarMensaje("Por favor, ingresa el código de 6 dígitos.", "red");
-            }
-            
-            if (codigoIngresado.length !== 6) {
-                return mostrarMensaje("El código debe tener 6 dígitos.", "red");
+            if (!codigo || codigo.length !== 6) {
+                return mostrarMensaje("Ingresa el código de 6 dígitos.", "red");
             }
 
-            if (codigoIngresado === codigoGenerado) {
-                telefonoVerificado = true;
-                document.getElementById('verificacion-telefono').classList.add('hidden');
-                document.getElementById('btn-continuar').disabled = false;
-                document.getElementById('btn-continuar').innerText = "Continuar";
-                mostrarMensaje("✅ Teléfono verificado correctamente.", "green");
-            } else {
-                mostrarMensaje(" Código incorrecto. Intenta de nuevo.", "red");
+            if (!confirmationResult) {
+                return mostrarMensaje("Primero debes solicitar un código.", "red");
             }
+
+            mostrarMensaje("Verificando...", "blue");
+
+            confirmationResult.confirm(codigo)
+                .then((result) => {
+                    // ¡Código correcto!
+                    telefonoVerificado = true;
+                    document.getElementById('verificacion-telefono').classList.add('hidden');
+                    document.getElementById('btn-continuar').disabled = false;
+                    document.getElementById('btn-continuar').innerText = "Continuar";
+                    document.getElementById('btn-enviar-sms').classList.add('hidden'); // Ocultar botón de enviar
+                    mostrarMensaje("✅ Teléfono verificado correctamente.", "green");
+                })
+                .catch((error) => {
+                    mostrarMensaje(" Código incorrecto. Intenta de nuevo.", "red");
+                });
         }
 
         async function completarRegistroGoogle() {
@@ -640,7 +428,7 @@
                 mostrarMensaje("Guardando datos...", "blue");
                 const user = usuarioGoogleTemporal;
 
-                // Verificar alias único (solo si se proporcionó)
+                // Verificar alias único
                 if (alias) {
                     const snapshot = await db.ref('usuarios').orderByChild('alias').equalTo(alias).once('value');
                     if (snapshot.exists()) {
@@ -649,8 +437,7 @@
                 }
 
                 await db.ref('usuarios/' + user.uid).set({
-                    nombre,
-                    apellido,
+                    nombre, apellido,
                     alias: alias || "",
                     email: user.email,
                     telefono: telefonoCompleto,
@@ -666,9 +453,11 @@
                 await user.updatePassword(password);
                 await auth.signOut();
 
+                // Limpiar todo
                 usuarioGoogleTemporal = null;
                 telefonoVerificado = false;
-                codigoGenerado = null;
+                confirmationResult = null;
+                if (recaptchaVerifier) { recaptchaVerifier.clear(); recaptchaVerifier = null; }
                 
                 mostrarMensaje("¡Cuenta creada exitosamente! Ahora inicia sesión.", "green");
 
@@ -677,8 +466,15 @@
                 document.getElementById('g-alias').value = "";
                 document.getElementById('g-password').value = "";
                 document.getElementById('g-confirm').value = "";
-                document.getElementById('codigo-whatsapp').value = "";
+                document.getElementById('codigo-sms').value = "";
                 if (telefonoInputInstance) telefonoInputInstance.setNumber("");
+                
+                // Resetear UI
+                document.getElementById('btn-continuar').disabled = true;
+                document.getElementById('btn-continuar').innerText = "Continuar (Verifica tu teléfono primero)";
+                document.getElementById('btn-enviar-sms').classList.remove('hidden');
+                document.getElementById('btn-enviar-sms').innerText = "📩 Enviar código por SMS";
+                document.getElementById('btn-enviar-sms').disabled = false;
 
                 setTimeout(() => {
                     document.getElementById('form-google-paso2').classList.add('hidden');
@@ -697,7 +493,8 @@
                 auth.signOut().then(() => {
                     usuarioGoogleTemporal = null;
                     telefonoVerificado = false;
-                    codigoGenerado = null;
+                    confirmationResult = null;
+                    if (recaptchaVerifier) { recaptchaVerifier.clear(); recaptchaVerifier = null; }
                     document.getElementById('form-google-paso2').classList.add('hidden');
                     document.getElementById('form-login').classList.remove('hidden');
                     mostrarMensaje("");
