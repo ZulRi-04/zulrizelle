@@ -2,31 +2,220 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Acceso - Web App Global</title>
+    
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #333; margin-top: 0; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 12px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-top: 10px; transition: background 0.3s; }
-        button:hover { background-color: #0056b3; }
-        .btn-secondary { background-color: #6c757d; }
-        .btn-secondary:hover { background-color: #545b62; }
-        #mensaje { text-align: center; margin-top: 15px; font-size: 14px; min-height: 20px; font-weight: bold; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body { 
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
+            background-color: #f0f2f5; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 15px;
+        }
+
+        .card { 
+            background: white; 
+            width: 100%; 
+            max-width: 100%;
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
+            overflow: hidden;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+            margin-bottom: -2px;
+        }
+
+        .form-container {
+            padding: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+        }
+
+        .row {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        button.btn-primary {
+            width: 100%;
+            padding: 14px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        button.btn-primary:hover { background-color: #0056b3; }
+        button.btn-primary:disabled { background-color: #a0cfff; cursor: not-allowed; }
+
+        .link-btn {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #007bff;
+            background: none;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            text-decoration: underline;
+            width: 100%;
+        }
+        .link-btn:hover { color: #0056b3; }
+
+        #mensaje {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+            min-height: 20px;
+            font-weight: 500;
+        }
+
+        .hidden { display: none !important; }
+
+        @media (min-width: 768px) {
+            body { padding: 0; }
+            .card { max-width: 450px; }
+            .form-container { padding: 30px; }
+            .row {
+                flex-direction: row;
+            }
+            .row .input-group {
+                flex: 1;
+                margin-bottom: 0;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Acceso Web App Global</h2>
-        <input type="email" id="email" placeholder="Correo electrónico">
-        <input type="password" id="password" placeholder="Contraseña (mín. 6 caracteres)">
-        <button onclick="iniciarSesion()">Iniciar Sesión</button>
-        <button class="btn-secondary" onclick="registrarse()">Crear Cuenta Nueva</button>
-        <p id="mensaje"></p>
+    <div class="card">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="cambiarPestana('login')">Iniciar Sesión</button>
+            <button class="tab-btn" onclick="cambiarPestana('registro')">Crear Cuenta</button>
+        </div>
+
+        <div class="form-container">
+            <!-- FORMULARIO DE LOGIN -->
+            <div id="form-login">
+                <h2>Bienvenido de nuevo</h2>
+                <div class="input-group">
+                    <label>Correo electrónico</label>
+                    <input type="email" id="login-email" placeholder="tu@correo.com">
+                </div>
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="login-password" placeholder="••••••••">
+                </div>
+                <button class="btn-primary" onclick="iniciarSesion()">Entrar</button>
+                <button class="link-btn" onclick="mostrarRecuperar()">¿Olvidaste tu contraseña?</button>
+            </div>
+
+            <!-- FORMULARIO DE RECUPERAR CONTRASEÑA -->
+            <div id="form-recuperar" class="hidden">
+                <h2>Recuperar Cuenta</h2>
+                <p style="text-align: center; color: #666; margin-bottom: 20px; font-size: 14px;">
+                    Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+                </p>
+                <div class="input-group">
+                    <label>Correo electrónico</label>
+                    <input type="email" id="recuperar-email" placeholder="tu@correo.com">
+                </div>
+                <button class="btn-primary" onclick="recuperarCuenta()">Enviar Enlace</button>
+                <button class="link-btn" onclick="cambiarPestana('login')">← Volver al inicio de sesión</button>
+            </div>
+
+            <!-- FORMULARIO DE REGISTRO -->
+            <div id="form-registro" class="hidden">
+                <h2>Crea tu cuenta</h2>
+                <div class="row">
+                    <div class="input-group">
+                        <label>Nombre</label>
+                        <input type="text" id="reg-nombre" placeholder="Tu nombre">
+                    </div>
+                    <div class="input-group">
+                        <label>Apellido</label>
+                        <input type="text" id="reg-apellido" placeholder="Tu apellido">
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 15px;">
+                    <label>Correo electrónico (Gmail)</label>
+                    <input type="email" id="reg-email" placeholder="tu@gmail.com">
+                </div>
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="input-group">
+                    <label>Confirmar Contraseña</label>
+                    <input type="password" id="reg-confirm" placeholder="Repite la contraseña">
+                </div>
+                <button class="btn-primary" onclick="registrarse()">Crear Cuenta</button>
+            </div>
+
+            <p id="mensaje"></p>
+        </div>
     </div>
 
     <script>
@@ -42,55 +231,151 @@
 
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.database();
         const mensaje = document.getElementById('mensaje');
 
-        // 1. PROTECCIÓN: Si ya está logueado, mandarlo al dashboard
         auth.onAuthStateChanged((user) => {
             if (user) {
-                window.location.href = "dashboard.html";
+                console.log("Usuario logueado:", user.email);
+                // Aquí luego redirigiremos al dashboard
             }
         });
 
+        // LÓGICA DE PESTAÑAS
+        function cambiarPestana(tipo) {
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            document.getElementById('form-login').classList.add('hidden');
+            document.getElementById('form-registro').classList.add('hidden');
+            document.getElementById('form-recuperar').classList.add('hidden');
+
+            if (tipo === 'login') {
+                tabs[0].classList.add('active');
+                document.getElementById('form-login').classList.remove('hidden');
+            } else if (tipo === 'registro') {
+                tabs[1].classList.add('active');
+                document.getElementById('form-registro').classList.remove('hidden');
+            }
+            mensaje.innerText = "";
+        }
+
+        function mostrarRecuperar() {
+            document.getElementById('form-login').classList.add('hidden');
+            document.getElementById('form-recuperar').classList.remove('hidden');
+            mensaje.innerText = "";
+        }
+
+        // INICIAR SESIÓN (con verificación de correo)
         function iniciarSesion() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            mensaje.style.color = "#007bff";
-            mensaje.innerText = "Procesando...";
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            mostrarMensaje("Procesando...", "blue");
 
             auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    
+                    // VERIFICAR SI EL CORREO ESTÁ CONFIRMADO
+                    if (!user.emailVerified) {
+                        auth.signOut(); // Cerrar sesión inmediatamente
+                        mostrarMensaje("Debes verificar tu correo. Revisa tu bandeja de entrada.", "orange");
+                        // Opción para reenviar correo
+                        setTimeout(() => {
+                            if(confirm("¿Quieres que reenviemos el correo de verificación?")) {
+                                reenviarVerificacion(user);
+                            }
+                        }, 500);
+                    } else {
+                        mostrarMensaje("¡Inicio de sesión exitoso!", "green");
+                    }
+                })
+                .catch((error) => mostrarMensaje("Error: " + traducirError(error.code), "red"));
+        }
+
+        // REGISTRARSE (envía correo de verificación)
+        function registrarse() {
+            const nombre = document.getElementById('reg-nombre').value.trim();
+            const apellido = document.getElementById('reg-apellido').value.trim();
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+            const confirm = document.getElementById('reg-confirm').value;
+
+            // Validación de Gmail
+            if (!email.toLowerCase().endsWith('@gmail.com')) {
+                return mostrarMensaje("Por favor, usa una cuenta de Gmail.", "red");
+            }
+
+            if (!nombre || !apellido) return mostrarMensaje("Por favor, ingresa tu nombre y apellido.", "red");
+            if (password.length < 6) return mostrarMensaje("La contraseña debe tener al menos 6 caracteres.", "red");
+            if (password !== confirm) return mostrarMensaje("Las contraseñas no coinciden.", "red");
+
+            mostrarMensaje("Creando cuenta...", "blue");
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+
+                    // Guardar en Realtime Database
+                    return db.ref('usuarios/' + user.uid).set({
+                        nombre: nombre,
+                        apellido: apellido,
+                        email: email,
+                        fechaRegistro: new Date().toISOString()
+                    }).then(() => {
+                        // Enviar correo de verificación
+                        return user.sendEmailVerification();
+                    });
+                })
+                .then(() => {
+                    mostrarMensaje("¡Cuenta creada! Revisa tu correo de Gmail para verificarla.", "green");
+                    document.querySelectorAll('#form-registro input').forEach(input => input.value = "");
+                })
                 .catch((error) => {
-                    mensaje.style.color = "red";
-                    mensaje.innerText = "Error: " + traducirError(error.code);
+                    mostrarMensaje("Error: " + traducirError(error.code), "red");
                 });
         }
 
-        function registrarse() {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+        // RECUPERAR CONTRASEÑA
+        function recuperarCuenta() {
+            const email = document.getElementById('recuperar-email').value;
+            if (!email) return mostrarMensaje("Ingresa tu correo electrónico.", "red");
 
-            if(password.length < 6) {
-                mensaje.style.color = "red";
-                mensaje.innerText = "La contraseña debe tener al menos 6 caracteres.";
-                return;
-            }
+            mostrarMensaje("Enviando enlace...", "blue");
 
-            mensaje.style.color = "#007bff";
-            mensaje.innerText = "Creando cuenta...";
-
-            auth.createUserWithEmailAndPassword(email, password)
+            auth.sendPasswordResetEmail(email)
+                .then(() => {
+                    mostrarMensaje("¡Correo enviado! Revisa tu bandeja de entrada.", "green");
+                    document.getElementById('recuperar-email').value = "";
+                })
                 .catch((error) => {
-                    mensaje.style.color = "red";
-                    mensaje.innerText = "Error: " + traducirError(error.code);
+                    mostrarMensaje("Error: " + traducirError(error.code), "red");
                 });
+        }
+
+        // REENVIAR CORREO DE VERIFICACIÓN
+        function reenviarVerificacion(user) {
+            user.sendEmailVerification()
+                .then(() => mostrarMensaje("Correo de verificación reenviado.", "green"))
+                .catch((error) => mostrarMensaje("Error al reenviar: " + error.message, "red"));
+        }
+
+        // UTILIDADES
+        function mostrarMensaje(texto, color) {
+            mensaje.innerText = texto;
+            mensaje.style.color = color;
         }
 
         function traducirError(codigo) {
             switch(codigo) {
                 case 'auth/user-not-found': return 'No existe una cuenta con este correo.';
                 case 'auth/wrong-password': return 'Contraseña incorrecta.';
+                case 'auth/invalid-credential': return 'Credenciales incorrectas.';
                 case 'auth/email-already-in-use': return 'Este correo ya está registrado.';
                 case 'auth/invalid-email': return 'El formato del correo no es válido.';
                 case 'auth/weak-password': return 'La contraseña es demasiado débil.';
+                case 'auth/too-many-requests': return 'Demasiados intentos. Espera un momento.';
+                case 'permission-denied': return 'Error de permisos en la base de datos.';
                 default: return 'Ocurrió un error. Verifica tus datos.';
             }
         }
