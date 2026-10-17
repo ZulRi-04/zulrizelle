@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Web App Global</title>
-    <!-- Firebase SDK (Versión Compat para uso directo en HTML sin compiladores) -->
+    <title>Acceso - Web App Global</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-    
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
@@ -18,13 +16,11 @@
         .btn-secondary { background-color: #6c757d; }
         .btn-secondary:hover { background-color: #545b62; }
         #mensaje { text-align: center; margin-top: 15px; font-size: 14px; min-height: 20px; font-weight: bold; }
-        #seccionUsuario { text-align: center; display: none; }
     </style>
 </head>
 <body>
 
-    <!-- SECCIÓN DE LOGIN / REGISTRO -->
-    <div class="container" id="seccionLogin">
+    <div class="container">
         <h2>Acceso Web App Global</h2>
         <input type="email" id="email" placeholder="Correo electrónico">
         <input type="password" id="password" placeholder="Contraseña (mín. 6 caracteres)">
@@ -33,16 +29,7 @@
         <p id="mensaje"></p>
     </div>
 
-    <!-- SECCIÓN DE USUARIO LOGUEADO -->
-    <div class="container" id="seccionUsuario">
-        <h2>¡Bienvenido!</h2>
-        <p>Has iniciado sesión correctamente con:</p>
-        <h3 id="emailUsuario" style="color: #007bff;"></h3>
-        <button class="btn-secondary" onclick="cerrarSesion()">Cerrar Sesión</button>
-    </div>
-
     <script>
-        // 1. CONFIGURACIÓN DE TU PROYECTO FIREBASE (zulri-1c741)
         const firebaseConfig = {
             apiKey: "AIzaSyBveW42iYdCHka8Q_pFlHTR2E6ou7DTek0",
             authDomain: "zulri-1c741.firebaseapp.com",
@@ -53,16 +40,17 @@
             appId: "1:694828053364:web:b617344a0cfaefc954f221"
         };
 
-        // 2. Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-
-        // Referencias a los elementos del HTML
-        const seccionLogin = document.getElementById('seccionLogin');
-        const seccionUsuario = document.getElementById('seccionUsuario');
         const mensaje = document.getElementById('mensaje');
 
-        // 3. Función para INICIAR SESIÓN
+        // 1. PROTECCIÓN: Si ya está logueado, mandarlo al dashboard
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                window.location.href = "dashboard.html";
+            }
+        });
+
         function iniciarSesion() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -70,16 +58,12 @@
             mensaje.innerText = "Procesando...";
 
             auth.signInWithEmailAndPassword(email, password)
-                .then(() => {
-                    mensaje.innerText = ""; // Se limpia, el observador onAuthStateChanged manejará la vista
-                })
                 .catch((error) => {
                     mensaje.style.color = "red";
                     mensaje.innerText = "Error: " + traducirError(error.code);
                 });
         }
 
-        // 4. Función para REGISTRARSE
         function registrarse() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
@@ -94,36 +78,12 @@
             mensaje.innerText = "Creando cuenta...";
 
             auth.createUserWithEmailAndPassword(email, password)
-                .then(() => {
-                    mensaje.innerText = ""; 
-                })
                 .catch((error) => {
                     mensaje.style.color = "red";
                     mensaje.innerText = "Error: " + traducirError(error.code);
                 });
         }
 
-        // 5. Función para CERRAR SESIÓN
-        function cerrarSesion() {
-            auth.signOut().then(() => {
-                document.getElementById('email').value = "";
-                document.getElementById('password').value = "";
-            });
-        }
-
-        // 6. Observador de estado: Controla qué pantalla mostrar automáticamente
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                seccionLogin.style.display = 'none';
-                seccionUsuario.style.display = 'block';
-                document.getElementById('emailUsuario').innerText = user.email;
-            } else {
-                seccionLogin.style.display = 'block';
-                seccionUsuario.style.display = 'none';
-            }
-        });
-
-        // Utilidad: Traducir errores comunes de Firebase al español
         function traducirError(codigo) {
             switch(codigo) {
                 case 'auth/user-not-found': return 'No existe una cuenta con este correo.';
