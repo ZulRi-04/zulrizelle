@@ -31,32 +31,6 @@
             overflow: hidden;
         }
 
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #eee;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 15px;
-            text-align: center;
-            background: none;
-            border: none;
-            font-size: 16px;
-            font-weight: 600;
-            color: #888;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .tab-btn.active {
-            color: #007bff;
-            border-bottom: 3px solid #007bff;
-            margin-bottom: -2px;
-        }
-        .tab-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.5;
-        }
-
         .form-container {
             padding: 20px;
         }
@@ -98,10 +72,6 @@
             outline: none;
             border-color: #007bff;
             box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
-        }
-        .input-group input:read-only {
-            background-color: #f8f9fa;
-            color: #666;
         }
 
         .toggle-password {
@@ -174,24 +144,6 @@
             height: 20px;
         }
 
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 20px 0;
-            color: #999;
-            font-size: 14px;
-        }
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #ddd;
-        }
-        .divider span {
-            padding: 0 10px;
-        }
-
         .link-btn {
             display: block;
             text-align: center;
@@ -260,18 +212,15 @@
 <body>
 
     <div class="card">
-        <div class="tabs" id="tabsContainer">
-            <button class="tab-btn active" id="tab-login" onclick="cambiarPestana('login')">Iniciar Sesión</button>
-            <button class="tab-btn" id="tab-registro" onclick="cambiarPestana('registro')">Crear Cuenta</button>
-        </div>
-
         <div class="form-container">
             
             <!-- ============================================ -->
-            <!-- FORMULARIO DE LOGIN (Email/Contraseña)       -->
+            <!-- FORMULARIO DE LOGIN                          -->
             <!-- ============================================ -->
             <div id="form-login">
                 <h2>Bienvenido de nuevo</h2>
+                <p class="subtitle">Inicia sesión para continuar</p>
+                
                 <div class="input-group">
                     <label>Correo electrónico</label>
                     <input type="email" id="login-email" placeholder="tu@correo.com">
@@ -288,6 +237,19 @@
                 </div>
                 <button class="btn-primary" onclick="iniciarSesion()">Entrar</button>
                 <button class="link-btn" onclick="mostrarRecuperar()">¿Olvidaste tu contraseña?</button>
+                
+                <div style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px;">
+                    <p class="subtitle" style="margin-bottom: 10px;">¿No tienes cuenta?</p>
+                    <button class="btn-google" onclick="iniciarConGoogle()">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Crear cuenta con Google
+                    </button>
+                </div>
             </div>
 
             <!-- ============================================ -->
@@ -301,77 +263,11 @@
                     <input type="email" id="recuperar-email" placeholder="tu@correo.com">
                 </div>
                 <button class="btn-primary" onclick="recuperarCuenta()">Enviar Enlace</button>
-                <button class="link-btn" onclick="cambiarPestana('login')">← Volver al inicio de sesión</button>
+                <button class="link-btn" onclick="volverAlLogin()">← Volver al inicio de sesión</button>
             </div>
 
             <!-- ============================================ -->
-            <!-- FORMULARIO DE REGISTRO (Email/Contraseña)    -->
-            <!-- ============================================ -->
-            <div id="form-registro" class="hidden">
-                <h2>Crea tu cuenta</h2>
-                <div class="row">
-                    <div class="input-group">
-                        <label>Nombre</label>
-                        <input type="text" id="reg-nombre" placeholder="Tu nombre">
-                    </div>
-                    <div class="input-group">
-                        <label>Apellido</label>
-                        <input type="text" id="reg-apellido" placeholder="Tu apellido">
-                    </div>
-                </div>
-                <div class="input-group" style="margin-top: 15px;">
-                    <label>Correo electrónico (Gmail)</label>
-                    <input type="email" id="reg-email" placeholder="tu@gmail.com">
-                </div>
-                <div class="input-group">
-                    <label>Contraseña</label>
-                    <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres">
-                    <button type="button" class="toggle-password" onclick="togglePassword('reg-password', this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                    </button>
-                </div>
-                <div class="input-group">
-                    <label>Confirmar Contraseña</label>
-                    <input type="password" id="reg-confirm" placeholder="Repite la contraseña">
-                    <button type="button" class="toggle-password" onclick="togglePassword('reg-confirm', this)">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                    </button>
-                </div>
-                <button class="btn-primary" onclick="registrarse()">Crear Cuenta</button>
-            </div>
-
-            <!-- ============================================ -->
-            <!-- PASO 1 GOOGLE: Botón para iniciar con Google -->
-            <!-- ============================================ -->
-            <div id="form-google-paso1" class="hidden">
-                <h2>Crea tu cuenta</h2>
-                <p class="subtitle">Usa tu cuenta de Google para un registro rápido y seguro.</p>
-                
-                <button class="btn-google" onclick="iniciarConGoogle()">
-                    <svg viewBox="0 0 24 24">
-                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                    </svg>
-                    Iniciar con Google
-                </button>
-
-                <div class="divider">
-                    <span>o regístrate con correo</span>
-                </div>
-
-                <button class="link-btn" onclick="cambiarPestana('registro')" style="margin-top: 0;">Usar correo y contraseña →</button>
-            </div>
-
-            <!-- ============================================ -->
-            <!-- PASO 2 GOOGLE: Completar datos adicionales   -->
+            <!-- PASO 2 GOOGLE: Completar datos + contraseña  -->
             <!-- ============================================ -->
             <div id="form-google-paso2" class="hidden">
                 <h2>Completa tu perfil</h2>
@@ -400,6 +296,26 @@
                     <label>Número de teléfono</label>
                     <input type="tel" id="g-telefono" placeholder="Ej: +1 234 567 8900">
                 </div>
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="g-password" placeholder="Mínimo 6 caracteres">
+                    <button type="button" class="toggle-password" onclick="togglePassword('g-password', this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-group">
+                    <label>Confirmar Contraseña</label>
+                    <input type="password" id="g-confirm" placeholder="Repite la contraseña">
+                    <button type="button" class="toggle-password" onclick="togglePassword('g-confirm', this)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                    </button>
+                </div>
                 
                 <button class="btn-primary" onclick="completarRegistroGoogle()">Continuar</button>
                 <button class="link-btn" onclick="cancelarRegistroGoogle()">Cancelar y volver</button>
@@ -426,58 +342,19 @@
         const mensaje = document.getElementById('mensaje');
         const googleProvider = new firebase.auth.GoogleAuthProvider();
         
-        // Variable temporal para guardar el usuario de Google entre pasos
         let usuarioGoogleTemporal = null;
 
-        // REDIRECCIÓN AL DASHBOARD (solo si ya completó todo el registro)
+        // Al cargar la página, si ya está logueado y tiene datos completos, ir al dashboard
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // Verificar si el usuario ya tiene datos completos en la base de datos
                 db.ref('usuarios/' + user.uid).once('value').then((snapshot) => {
                     const datos = snapshot.val();
-                    // Si ya tiene nombre, apellido y teléfono registrados, mandar al dashboard
                     if (datos && datos.nombre && datos.apellido && datos.telefono) {
                         window.location.href = "dashboard.html";
                     }
-                    // Si no tiene datos completos, se queda en el index (paso 2 de Google)
                 });
             }
         });
-
-        // LÓGICA DE PESTAÑAS
-        function cambiarPestana(tipo) {
-            const tabLogin = document.getElementById('tab-login');
-            const tabRegistro = document.getElementById('tab-registro');
-            const tabsContainer = document.getElementById('tabsContainer');
-
-            // Ocultar todos los formularios
-            document.getElementById('form-login').classList.add('hidden');
-            document.getElementById('form-registro').classList.add('hidden');
-            document.getElementById('form-recuperar').classList.add('hidden');
-            document.getElementById('form-google-paso1').classList.add('hidden');
-            document.getElementById('form-google-paso2').classList.add('hidden');
-            
-            // Mostrar/ocultar tabs
-            if (tipo === 'login') {
-                tabsContainer.classList.remove('hidden');
-                tabLogin.classList.add('active');
-                tabRegistro.classList.remove('active');
-                document.getElementById('form-login').classList.remove('hidden');
-            } else if (tipo === 'registro') {
-                tabsContainer.classList.remove('hidden');
-                tabLogin.classList.remove('active');
-                tabRegistro.classList.add('active');
-                document.getElementById('form-google-paso1').classList.remove('hidden');
-            }
-            mensaje.innerText = "";
-        }
-
-        function mostrarRecuperar() {
-            document.getElementById('tabsContainer').classList.add('hidden');
-            document.getElementById('form-login').classList.add('hidden');
-            document.getElementById('form-recuperar').classList.remove('hidden');
-            mensaje.innerText = "";
-        }
 
         // MOSTRAR/OCULTAR CONTRASEÑA
         function togglePassword(inputId, button) {
@@ -500,6 +377,13 @@
             }
         }
 
+        // VOLVER AL LOGIN
+        function volverAlLogin() {
+            document.getElementById('form-recuperar').classList.add('hidden');
+            document.getElementById('form-login').classList.remove('hidden');
+            mensaje.innerText = "";
+        }
+
         // ============================================
         // PASO 1: INICIAR CON GOOGLE
         // ============================================
@@ -510,15 +394,14 @@
                 .then((result) => {
                     const user = result.user;
                     
-                    // Verificar si ya tiene datos completos en la BD
                     return db.ref('usuarios/' + user.uid).once('value').then((snapshot) => {
                         const datos = snapshot.val();
                         
                         if (datos && datos.nombre && datos.apellido && datos.telefono) {
-                            // Ya está completo, ir al dashboard
+                            // Ya está registrado, ir al dashboard
                             mostrarMensaje("¡Bienvenido de nuevo! Redirigiendo...", "green");
                         } else {
-                            // Necesita completar datos, mostrar paso 2
+                            // Necesita completar datos
                             usuarioGoogleTemporal = user;
                             mostrarPaso2Google(user);
                         }
@@ -533,14 +416,9 @@
         // PASO 2: MOSTRAR FORMULARIO DE DATOS
         // ============================================
         function mostrarPaso2Google(user) {
-            // Ocultar tabs y paso 1
-            document.getElementById('tabsContainer').classList.add('hidden');
-            document.getElementById('form-google-paso1').classList.add('hidden');
-            
-            // Mostrar paso 2
+            document.getElementById('form-login').classList.add('hidden');
             document.getElementById('form-google-paso2').classList.remove('hidden');
             
-            // Llenar info del usuario
             document.getElementById('google-avatar').src = user.photoURL || 'https://via.placeholder.com/40';
             document.getElementById('google-name').textContent = user.displayName || 'Usuario de Google';
             document.getElementById('google-email').textContent = user.email;
@@ -561,14 +439,19 @@
             const nombre = document.getElementById('g-nombre').value.trim();
             const apellido = document.getElementById('g-apellido').value.trim();
             const telefono = document.getElementById('g-telefono').value.trim();
+            const password = document.getElementById('g-password').value;
+            const confirm = document.getElementById('g-confirm').value;
 
             if (!nombre || !apellido) return mostrarMensaje("Por favor, ingresa tu nombre y apellido.", "red");
             if (!telefono) return mostrarMensaje("Por favor, ingresa tu número de teléfono.", "red");
+            if (password.length < 6) return mostrarMensaje("La contraseña debe tener al menos 6 caracteres.", "red");
+            if (password !== confirm) return mostrarMensaje("Las contraseñas no coinciden.", "red");
 
             mostrarMensaje("Guardando datos...", "blue");
 
             const user = usuarioGoogleTemporal;
 
+            // Guardar datos en la base de datos
             db.ref('usuarios/' + user.uid).set({
                 nombre: nombre,
                 apellido: apellido,
@@ -580,12 +463,34 @@
                 correoVerificado: true
             })
             .then(() => {
-                mostrarMensaje("¡Registro completado! Redirigiendo...", "green");
+                // Establecer la contraseña en la cuenta de Google
+                return user.updatePassword(password);
+            })
+            .then(() => {
+                // Cerrar sesión para que el usuario inicie manualmente
+                return auth.signOut();
+            })
+            .then(() => {
                 usuarioGoogleTemporal = null;
-                // El onAuthStateChanged detectará los datos completos y redirigirá
+                mostrarMensaje("¡Cuenta creada exitosamente! Ahora inicia sesión.", "green");
+                
+                // Limpiar campos
+                document.getElementById('g-nombre').value = "";
+                document.getElementById('g-apellido').value = "";
+                document.getElementById('g-telefono').value = "";
+                document.getElementById('g-password').value = "";
+                document.getElementById('g-confirm').value = "";
+                
+                // Volver al formulario de login
+                setTimeout(() => {
+                    document.getElementById('form-google-paso2').classList.add('hidden');
+                    document.getElementById('form-login').classList.remove('hidden');
+                    document.getElementById('login-email').value = user.email; // Pre-llenar el correo
+                    mostrarMensaje("");
+                }, 2000);
             })
             .catch((error) => {
-                mostrarMensaje("Error al guardar: " + error.message, "red");
+                mostrarMensaje("Error: " + error.message, "red");
             });
         }
 
@@ -594,15 +499,19 @@
             if (usuarioGoogleTemporal) {
                 auth.signOut().then(() => {
                     usuarioGoogleTemporal = null;
-                    cambiarPestana('registro');
+                    document.getElementById('form-google-paso2').classList.add('hidden');
+                    document.getElementById('form-login').classList.remove('hidden');
+                    mostrarMensaje("");
                 });
             } else {
-                cambiarPestana('registro');
+                document.getElementById('form-google-paso2').classList.add('hidden');
+                document.getElementById('form-login').classList.remove('hidden');
+                mostrarMensaje("");
             }
         }
 
         // ============================================
-        // INICIAR SESIÓN CON EMAIL
+        // INICIAR SESIÓN CON EMAIL/CONTRASEÑA
         // ============================================
         function iniciarSesion() {
             const email = document.getElementById('login-email').value;
@@ -626,50 +535,6 @@
                     }
                 })
                 .catch((error) => mostrarMensaje("Error: " + traducirError(error.code), "red"));
-        }
-
-        // ============================================
-        // REGISTRARSE CON EMAIL
-        // ============================================
-        function registrarse() {
-            const nombre = document.getElementById('reg-nombre').value.trim();
-            const apellido = document.getElementById('reg-apellido').value.trim();
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const confirm = document.getElementById('reg-confirm').value;
-
-            if (!email.toLowerCase().endsWith('@gmail.com')) {
-                return mostrarMensaje("Por favor, usa una cuenta de Gmail.", "red");
-            }
-
-            if (!nombre || !apellido) return mostrarMensaje("Por favor, ingresa tu nombre y apellido.", "red");
-            if (password.length < 6) return mostrarMensaje("La contraseña debe tener al menos 6 caracteres.", "red");
-            if (password !== confirm) return mostrarMensaje("Las contraseñas no coinciden.", "red");
-
-            mostrarMensaje("Creando cuenta...", "blue");
-
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    const user = userCredential.user;
-
-                    return db.ref('usuarios/' + user.uid).set({
-                        nombre: nombre,
-                        apellido: apellido,
-                        email: email,
-                        fechaRegistro: new Date().toISOString(),
-                        metodoRegistro: 'email',
-                        correoVerificado: false
-                    }).then(() => {
-                        return user.sendEmailVerification();
-                    });
-                })
-                .then(() => {
-                    mostrarMensaje("¡Cuenta creada! Revisa tu correo de Gmail para verificarla.", "green");
-                    document.querySelectorAll('#form-registro input').forEach(input => input.value = "");
-                })
-                .catch((error) => {
-                    mostrarMensaje("Error: " + traducirError(error.code), "red");
-                });
         }
 
         // RECUPERAR CONTRASEÑA
@@ -712,6 +577,7 @@
                 case 'auth/weak-password': return 'La contraseña es demasiado débil.';
                 case 'auth/too-many-requests': return 'Demasiados intentos. Espera un momento.';
                 case 'permission-denied': return 'Error de permisos en la base de datos.';
+                case 'auth/requires-recent-login': return 'Por seguridad, cierra sesión e inicia de nuevo.';
                 default: return 'Ocurrió un error. Verifica tus datos.';
             }
         }
