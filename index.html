@@ -9,9 +9,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
     
-    <!-- Librería intl-tel-input para selector de país con banderas -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <!-- Librería intl-tel-input v18 con búsqueda integrada -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/css/intlTelInput.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/intlTelInput.min.js"></script>
     
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -78,10 +78,19 @@
             box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
         }
 
-        /* Ajustes para intl-tel-input */
+        /* Ajustes para intl-tel-input v18 */
         .iti { width: 100%; }
-        .iti__flag-container {
-            border-radius: 8px 0 0 8px;
+        .iti__search-input {
+            padding: 8px 12px !important;
+            border: 1px solid #ddd !important;
+            border-radius: 6px !important;
+            font-size: 14px !important;
+            margin: 8px !important;
+            width: calc(100% - 16px) !important;
+        }
+        .iti__search-input:focus {
+            outline: none;
+            border-color: #007bff !important;
         }
         .input-group input#telefono-input {
             padding-left: 90px;
@@ -209,6 +218,49 @@
             margin-bottom: 15px;
         }
 
+        /* Cartel de éxito de recuperación */
+        .alert-success {
+            background-color: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 14px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #155724;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            animation: slideDown 0.3s ease-out;
+        }
+        .alert-success .icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .alert-success .close-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: #155724;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 5px;
+            opacity: 0.6;
+        }
+        .alert-success .close-btn:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .divider {
             display: flex;
             align-items: center;
@@ -262,6 +314,16 @@
             <div id="form-login">
                 <h2>Bienvenido de nuevo</h2>
                 <p class="subtitle">Inicia sesión para continuar</p>
+                
+                <!-- Cartel de recuperación exitosa (oculto por defecto) -->
+                <div id="alerta-recuperacion" class="alert-success hidden">
+                    <span class="icon">✅</span>
+                    <div>
+                        <strong>Su contraseña ha sido restablecida.</strong><br>
+                        Revise su correo electrónico. Si no lo ves, revisa tu carpeta de spam.
+                    </div>
+                    <button class="close-btn" onclick="cerrarAlertaRecuperacion()" title="Cerrar">✕</button>
+                </div>
                 
                 <div class="input-group">
                     <label>Correo electrónico</label>
@@ -410,6 +472,7 @@
         
         let usuarioGoogleTemporal = null;
         let telefonoInputInstance = null;
+        let mostrarAlertaRecuperacion = false;
 
         // Al cargar la página, si ya está logueado y tiene datos completos, ir al dashboard
         auth.onAuthStateChanged((user) => {
@@ -444,11 +507,28 @@
             }
         }
 
+        // CERRAR ALERTA DE RECUPERACIÓN
+        function cerrarAlertaRecuperacion() {
+            document.getElementById('alerta-recuperacion').classList.add('hidden');
+            mostrarAlertaRecuperacion = false;
+        }
+
         // VOLVER AL LOGIN
-        function volverAlLogin() {
+        function volverAlLogin(mostrarAlerta = false) {
             document.getElementById('form-recuperar').classList.add('hidden');
             document.getElementById('form-login').classList.remove('hidden');
             mensaje.innerText = "";
+            
+            if (mostrarAlerta) {
+                mostrarAlertaRecuperacion = true;
+                document.getElementById('alerta-recuperacion').classList.remove('hidden');
+                // Auto-ocultar después de 10 segundos
+                setTimeout(() => {
+                    if (mostrarAlertaRecuperacion) {
+                        cerrarAlertaRecuperacion();
+                    }
+                }, 10000);
+            }
         }
 
         // MOSTRAR FORMULARIO DE RECUPERAR CONTRASEÑA
@@ -456,6 +536,8 @@
             document.getElementById('form-login').classList.add('hidden');
             document.getElementById('form-recuperar').classList.remove('hidden');
             mensaje.innerText = "";
+            // Ocultar alerta si estaba visible
+            cerrarAlertaRecuperacion();
         }
 
         // ============================================
@@ -504,12 +586,9 @@
                             return auth.signOut();
                         })
                         .then(() => {
-                            mostrarMensaje(`✅ ¡Enlace enviado a ${email}! Revisa tu bandeja de entrada de Gmail (y la carpeta de Spam).`, "green");
-                            
-                            // Volver al login después de 3 segundos
-                            setTimeout(() => {
-                                volverAlLogin();
-                            }, 3000);
+                            // Volver al login mostrando la alerta de éxito
+                            volverAlLogin(true);
+                            mostrarMensaje("");
                         });
                 })
                 .catch((error) => {
@@ -534,14 +613,14 @@
             if (partes[0]) document.getElementById('g-nombre').value = partes[0];
             if (partes.length > 1) document.getElementById('g-apellido').value = partes.slice(1).join(' ');
             
-            // Inicializar el selector de teléfono con banderas
+            // Inicializar el selector de teléfono con banderas y búsqueda
             inicializarSelectorTelefono();
             
             mostrarMensaje("");
         }
 
         // ============================================
-        // INICIALIZAR SELECTOR DE TELÉFONO CON BANDERAS
+        // INICIALIZAR SELECTOR DE TELÉFONO CON BANDERAS Y BÚSQUEDA
         // ============================================
         function inicializarSelectorTelefono() {
             // Si ya existe una instancia, destruirla
@@ -554,15 +633,38 @@
             telefonoInputInstance = window.intlTelInput(input, {
                 initialCountry: "auto",
                 geoIpLookup: function(callback) {
-                    // Detectar país por IP
+                    // Intento 1: ipapi.co
                     fetch("https://ipapi.co/json/")
                         .then(res => res.json())
-                        .then(data => callback(data.country_code))
-                        .catch(() => callback("us")); // Default a EE.UU. si falla
+                        .then(data => {
+                            if (data.country_code) {
+                                callback(data.country_code);
+                            } else {
+                                throw new Error("No country code");
+                            }
+                        })
+                        .catch(() => {
+                            // Intento 2: ip-api.com (fallback)
+                            fetch("http://ip-api.com/json/")
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.countryCode) {
+                                        callback(data.countryCode);
+                                    } else {
+                                        throw new Error("No country code");
+                                    }
+                                })
+                                .catch(() => {
+                                    // Default final: España
+                                    callback("es");
+                                });
+                        });
                 },
-                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js",
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/utils.js",
                 separateDialCode: true,
-                preferredCountries: ["es", "mx", "ar", "co", "cl", "pe", "ve", "us"],
+                showSearchBox: true, // Activa la lupa/búsqueda
+                searchBoxPlaceholder: "Buscar país...",
+                preferredCountries: ["es", "mx", "ar", "co", "cl", "pe", "ve", "us", "do", "pr", "gt", "hn", "sv", "ni", "cr", "pa", "cu", "ec", "bo", "py", "uy"],
                 autoPlaceholder: "polite",
                 formatOnDisplay: true
             });
@@ -684,8 +786,9 @@
 
             auth.sendPasswordResetEmail(email)
                 .then(() => {
-                    mostrarMensaje("✅ ¡Correo enviado! Revisa tu bandeja de entrada de Gmail. Si no lo ves, revisa la carpeta de Spam.", "green");
-                    document.getElementById('recuperar-email').value = "";
+                    // Volver al login con alerta de éxito
+                    volverAlLogin(true);
+                    mostrarMensaje("");
                 })
                 .catch((error) => {
                     let errorMsg = traducirError(error.code);
