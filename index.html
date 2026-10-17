@@ -62,7 +62,7 @@
         .iti__search-input { padding: 8px 35px 8px 12px !important; border: 1px solid #ddd !important; border-radius: 6px !important; font-size: 14px !important; margin: 8px !important; width: calc(100% - 16px) !important; }
         .iti__search-input:focus { outline: none; border-color: #007bff !important; }
         .iti__search-box { position: relative; }
-        .iti__search-box::before { content: "🔍"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; z-index: 100; opacity: 0.5; }
+        .iti__search-box::before { content: ""; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; z-index: 100; opacity: 0.5; }
 
         .toggle-password { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; color: #666; transition: color 0.3s; z-index: 10; margin-top: 12px; }
         .toggle-password:hover { color: #007bff; }
@@ -72,11 +72,6 @@
 
         button.btn-primary { width: 100%; padding: 14px; background-color: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; margin-top: 10px; transition: background 0.3s; }
         button.btn-primary:hover { background-color: #0056b3; }
-        button.btn-primary:disabled { background-color: #a0cfff; cursor: not-allowed; }
-
-        .btn-sms { width: 100%; padding: 12px; background-color: #25D366; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; margin-top: 10px; transition: background 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-sms:hover { background-color: #128C7E; }
-        .btn-sms:disabled { background-color: #95d5b2; cursor: not-allowed; }
 
         .btn-google { width: 100%; padding: 12px; background-color: white; color: #333; border: 2px solid #ddd; border-radius: 8px; cursor: pointer; font-size: 15px; font-weight: 600; margin-top: 10px; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-google:hover { background-color: #f8f9fa; border-color: #bbb; }
@@ -90,13 +85,6 @@
         .user-info .info-text { flex: 1; }
         .user-info .info-text .name { font-weight: 600; font-size: 14px; color: #333; }
         .user-info .info-text .email { font-size: 12px; color: #666; }
-
-        .verification-box { background: #f0f8ff; border: 2px solid #007bff; border-radius: 8px; padding: 15px; margin: 15px 0; }
-        .verification-box h4 { color: #0056b3; margin-bottom: 10px; font-size: 14px; text-align: center; }
-        .code-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 18px; text-align: center; letter-spacing: 5px; font-weight: bold; }
-        .code-input:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
-
-        #recaptcha-container { margin: 10px 0; min-height: 50px; }
 
         #mensaje { text-align: center; margin-top: 15px; font-size: 14px; min-height: 20px; font-weight: 500; }
         .hidden { display: none !important; }
@@ -185,27 +173,8 @@
                         <label>Número de teléfono *</label>
                         <input type="tel" id="telefono-input" placeholder="Selecciona tu país e ingresa el número" required>
                     </div>
-
-                    <!-- reCAPTCHA container (necesario para Firebase Phone Auth) -->
-                    <div id="recaptcha-container"></div>
-
-                    <!-- CAJA DE VERIFICACIÓN SMS -->
-                    <div id="verificacion-telefono" class="verification-box hidden">
-                        <h4>📱 Verificación por SMS</h4>
-                        <p style="font-size: 13px; color: #666; margin-bottom: 10px; text-align: center;">
-                            Ingresa el código de 6 dígitos que recibiste por SMS
-                        </p>
-                        <input type="text" id="codigo-sms" class="code-input" placeholder="______" maxlength="6">
-                        <button class="btn-primary" style="margin-top: 10px;" onclick="verificarCodigoSMS()">
-                            Verificar Código
-                        </button>
-                    </div>
                     
-                    <button class="btn-sms" onclick="enviarCodigoSMS()" id="btn-enviar-sms">
-                         Enviar código por SMS
-                    </button>
-                    
-                    <div class="input-group" style="margin-top: 15px;">
+                    <div class="input-group">
                         <label>Contraseña *</label>
                         <input type="password" id="g-password" placeholder="Mínimo 6 caracteres" required>
                         <button type="button" class="toggle-password" onclick="togglePassword('g-password', this)">
@@ -220,9 +189,7 @@
                         </button>
                     </div>
                     
-                    <button class="btn-primary" onclick="completarRegistroGoogle()" id="btn-continuar" disabled>
-                        Continuar (Verifica tu teléfono primero)
-                    </button>
+                    <button class="btn-primary" onclick="completarRegistroGoogle()">Continuar</button>
                     <button class="link-btn" onclick="cancelarRegistroGoogle()">Cancelar y volver</button>
                 </div>
 
@@ -251,9 +218,6 @@
         
         let usuarioGoogleTemporal = null;
         let telefonoInputInstance = null;
-        let telefonoVerificado = false;
-        let confirmationResult = null;
-        let recaptchaVerifier = null;
 
         auth.onAuthStateChanged((user) => {
             if (user) {
@@ -325,105 +289,7 @@
             });
         }
 
-        // ENVIAR CÓDIGO POR SMS
-        function enviarCodigoSMS() {
-            if (!telefonoInputInstance || !telefonoInputInstance.getNumber()) {
-                return mostrarMensaje("Por favor, ingresa un número de teléfono válido.", "red");
-            }
-            if (!telefonoInputInstance.isValidNumber()) {
-                return mostrarMensaje("El número de teléfono no es válido.", "red");
-            }
-
-            const telefonoCompleto = telefonoInputInstance.getNumber();
-            
-            mostrarMensaje("Preparando envío de SMS...", "blue");
-            document.getElementById('btn-enviar-sms').disabled = true;
-
-            // Configurar reCAPTCHA
-            if (!recaptchaVerifier) {
-                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                    'size': 'normal',
-                    'callback': (response) => {
-                        console.log("reCAPTCHA resuelto");
-                    },
-                    'expired-callback': () => {
-                        mostrarMensaje("reCAPTCHA expirado. Intenta de nuevo.", "red");
-                        recaptchaVerifier = null;
-                    }
-                });
-            }
-
-            // Enviar el SMS
-            auth.signInWithPhoneNumber(telefonoCompleto, recaptchaVerifier)
-                .then((result) => {
-                    confirmationResult = result;
-                    document.getElementById('verificacion-telefono').classList.remove('hidden');
-                    document.getElementById('codigo-sms').focus();
-                    mostrarMensaje("✅ Código SMS enviado. Revisa tu teléfono.", "green");
-                    document.getElementById('btn-enviar-sms').innerText = "📩 Reenviar código";
-                    document.getElementById('btn-enviar-sms').disabled = false;
-                    console.log("SMS enviado exitosamente a:", telefonoCompleto);
-                })
-                .catch((error) => {
-                    console.error("Error completo:", error);
-                    let errorMsg = error.message;
-                    
-                    // Traducir errores comunes
-                    if (error.code === 'auth/invalid-phone-number') {
-                        errorMsg = "Número de teléfono inválido. Verifica el formato.";
-                    } else if (error.code === 'auth/too-many-requests') {
-                        errorMsg = "Demasiados intentos. Espera unos minutos.";
-                    } else if (error.code === 'auth/quota-exceeded') {
-                        errorMsg = "Límite de SMS alcanzado. Intenta más tarde.";
-                    } else if (error.code === 'auth/captcha-check-failed') {
-                        errorMsg = "Error en reCAPTCHA. Recarga la página.";
-                    }
-                    
-                    mostrarMensaje("Error: " + errorMsg, "red");
-                    document.getElementById('btn-enviar-sms').disabled = false;
-                    
-                    // Resetear reCAPTCHA en caso de error
-                    if (recaptchaVerifier) {
-                        recaptchaVerifier.clear();
-                        recaptchaVerifier = null;
-                    }
-                });
-        }
-
-        // VERIFICAR EL CÓDIGO SMS
-        function verificarCodigoSMS() {
-            const codigo = document.getElementById('codigo-sms').value.trim();
-            
-            if (!codigo || codigo.length !== 6) {
-                return mostrarMensaje("Ingresa el código de 6 dígitos.", "red");
-            }
-
-            if (!confirmationResult) {
-                return mostrarMensaje("Primero debes solicitar un código.", "red");
-            }
-
-            mostrarMensaje("Verificando...", "blue");
-
-            confirmationResult.confirm(codigo)
-                .then((result) => {
-                    telefonoVerificado = true;
-                    document.getElementById('verificacion-telefono').classList.add('hidden');
-                    document.getElementById('btn-continuar').disabled = false;
-                    document.getElementById('btn-continuar').innerText = "Continuar";
-                    document.getElementById('btn-enviar-sms').classList.add('hidden');
-                    mostrarMensaje("✅ Teléfono verificado correctamente.", "green");
-                })
-                .catch((error) => {
-                    console.error("Error al verificar:", error);
-                    mostrarMensaje(" Código incorrecto. Intenta de nuevo.", "red");
-                });
-        }
-
         async function completarRegistroGoogle() {
-            if (!telefonoVerificado) {
-                return mostrarMensaje("Debes verificar tu número de teléfono primero.", "red");
-            }
-
             const nombre = document.getElementById('g-nombre').value.trim();
             const apellido = document.getElementById('g-apellido').value.trim();
             const alias = document.getElementById('g-alias').value.trim();
@@ -432,6 +298,8 @@
 
             if (!nombre) return mostrarMensaje("El nombre es obligatorio.", "red");
             if (!apellido) return mostrarMensaje("El apellido es obligatorio.", "red");
+            if (!telefonoInputInstance || !telefonoInputInstance.getNumber()) return mostrarMensaje("El número de teléfono es obligatorio.", "red");
+            if (!telefonoInputInstance.isValidNumber()) return mostrarMensaje("Por favor, ingresa un número de teléfono válido.", "red");
             if (!password) return mostrarMensaje("La contraseña es obligatoria.", "red");
             if (password.length < 6) return mostrarMensaje("La contraseña debe tener al menos 6 caracteres.", "red");
             if (!confirm) return mostrarMensaje("Debes confirmar la contraseña.", "red");
@@ -456,7 +324,6 @@
                     alias: alias || "",
                     email: user.email,
                     telefono: telefonoCompleto,
-                    telefonoVerificado: true,
                     codigoPais: paisSeleccionado.iso2,
                     nombrePais: paisSeleccionado.name,
                     foto: user.photoURL || "",
@@ -469,9 +336,6 @@
                 await auth.signOut();
 
                 usuarioGoogleTemporal = null;
-                telefonoVerificado = false;
-                confirmationResult = null;
-                if (recaptchaVerifier) { recaptchaVerifier.clear(); recaptchaVerifier = null; }
                 
                 mostrarMensaje("¡Cuenta creada exitosamente! Ahora inicia sesión.", "green");
 
@@ -480,14 +344,7 @@
                 document.getElementById('g-alias').value = "";
                 document.getElementById('g-password').value = "";
                 document.getElementById('g-confirm').value = "";
-                document.getElementById('codigo-sms').value = "";
                 if (telefonoInputInstance) telefonoInputInstance.setNumber("");
-                
-                document.getElementById('btn-continuar').disabled = true;
-                document.getElementById('btn-continuar').innerText = "Continuar (Verifica tu teléfono primero)";
-                document.getElementById('btn-enviar-sms').classList.remove('hidden');
-                document.getElementById('btn-enviar-sms').innerText = "📩 Enviar código por SMS";
-                document.getElementById('btn-enviar-sms').disabled = false;
 
                 setTimeout(() => {
                     document.getElementById('form-google-paso2').classList.add('hidden');
@@ -497,7 +354,6 @@
                 }, 2000);
 
             } catch (error) {
-                console.error("Error al completar registro:", error);
                 mostrarMensaje("Error: " + error.message, "red");
             }
         }
@@ -506,9 +362,6 @@
             if (usuarioGoogleTemporal) {
                 auth.signOut().then(() => {
                     usuarioGoogleTemporal = null;
-                    telefonoVerificado = false;
-                    confirmationResult = null;
-                    if (recaptchaVerifier) { recaptchaVerifier.clear(); recaptchaVerifier = null; }
                     document.getElementById('form-google-paso2').classList.add('hidden');
                     document.getElementById('form-login').classList.remove('hidden');
                     mostrarMensaje("");
