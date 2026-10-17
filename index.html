@@ -17,7 +17,7 @@
         
         body { 
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
-            background-color:#AED6F1; 
+            background-color: #D6EAF8; 
             display: flex; 
             flex-direction: column;
             justify-content: center;
@@ -34,7 +34,6 @@
             align-items: center;
         }
 
-        /* Header centrado: logo + texto + zelle */
         .header-brand {
             display: flex;
             flex-direction: column;
@@ -62,7 +61,6 @@
             color: #d4a017;
         }
 
-        /* Logo de Zelle */
         .zelle-logo {
             width: 100px;
             height: auto;
@@ -113,9 +111,10 @@
             box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
         }
 
+        /* Ajustes para intl-tel-input con búsqueda */
         .iti { width: 100%; }
         .iti__search-input {
-            padding: 8px 12px !important;
+            padding: 8px 35px 8px 12px !important;
             border: 1px solid #ddd !important;
             border-radius: 6px !important;
             font-size: 14px !important;
@@ -125,6 +124,21 @@
         .iti__search-input:focus {
             outline: none;
             border-color: #007bff !important;
+        }
+        /* Icono de lupa en el search box */
+        .iti__search-box {
+            position: relative;
+        }
+        .iti__search-box::before {
+            content: "🔍";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.5;
         }
 
         .toggle-password {
@@ -249,15 +263,12 @@
 
     <div class="auth-wrapper">
         
-        <!-- HEADER CENTRADO: Logo + Texto + Zelle -->
         <div class="header-brand">
             <img src="logo.png" alt="ZulRi Logo" class="logo">
             <div class="brand-text">Bienvenido a tu <span>verificador de confianza</span></div>
-            <!-- Logo de Zelle -->
-            <img src="https://logowik.com/content/uploads/images/t_zelle6779.logowik.com.webp" alt="Zelle" class="zelle-logo">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Zelle_logo.svg/512px-Zelle_logo.svg.png" alt="Zelle" class="zelle-logo">
         </div>
 
-        <!-- CARD BLANCO -->
         <div class="card">
             <div class="form-container">
                 
@@ -453,11 +464,17 @@
                 utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/utils.js",
                 separateDialCode: true,
                 showSearchBox: true,
-                searchBoxPlaceholder: "Buscar país...",
+                searchBoxPlaceholder: "🔍 Buscar país o código...",
                 preferredCountries: ["es", "mx", "ar", "co", "cl", "pe", "ve", "us", "do", "pr", "gt", "hn", "sv", "ni", "cr", "pa", "cu", "ec", "bo", "py", "uy"],
                 autoPlaceholder: "polite",
                 formatOnDisplay: true
             });
+        }
+
+        // Función para verificar si el teléfono ya existe
+        async function telefonoExiste(telefono) {
+            const snapshot = await db.ref('usuarios').orderByChild('telefono').equalTo(telefono).once('value');
+            return snapshot.exists();
         }
 
         function completarRegistroGoogle() {
@@ -478,38 +495,49 @@
             const telefonoCompleto = telefonoInputInstance.getNumber();
             const paisSeleccionado = telefonoInputInstance.getSelectedCountryData();
 
-            mostrarMensaje("Guardando datos...", "blue");
-            const user = usuarioGoogleTemporal;
+            mostrarMensaje("Verificando teléfono...", "blue");
 
-            db.ref('usuarios/' + user.uid).set({
-                nombre, apellido,
-                email: user.email,
-                telefono: telefonoCompleto,
-                codigoPais: paisSeleccionado.iso2,
-                nombrePais: paisSeleccionado.name,
-                foto: user.photoURL || "",
-                fechaRegistro: new Date().toISOString(),
-                metodoRegistro: 'google',
-                correoVerificado: true
-            })
-            .then(() => user.updatePassword(password))
-            .then(() => auth.signOut())
-            .then(() => {
-                usuarioGoogleTemporal = null;
-                mostrarMensaje("¡Cuenta creada exitosamente! Ahora inicia sesión.", "green");
-                document.getElementById('g-nombre').value = "";
-                document.getElementById('g-apellido').value = "";
-                document.getElementById('g-password').value = "";
-                document.getElementById('g-confirm').value = "";
-                if (telefonoInputInstance) telefonoInputInstance.setNumber("");
-                setTimeout(() => {
-                    document.getElementById('form-google-paso2').classList.add('hidden');
-                    document.getElementById('form-login').classList.remove('hidden');
-                    document.getElementById('login-email').value = user.email;
-                    mostrarMensaje("");
-                }, 2000);
-            })
-            .catch((error) => mostrarMensaje("Error: " + error.message, "red"));
+            // Verificar si el teléfono ya está registrado
+            telefonoExiste(telefonoCompleto)
+                .then((existe) => {
+                    if (existe) {
+                        return mostrarMensaje("Este número de teléfono ya está registrado. Usa otro número o inicia sesión.", "red");
+                    }
+
+                    // Si no existe, continuar con el registro
+                    mostrarMensaje("Guardando datos...", "blue");
+                    const user = usuarioGoogleTemporal;
+
+                    return db.ref('usuarios/' + user.uid).set({
+                        nombre, apellido,
+                        email: user.email,
+                        telefono: telefonoCompleto,
+                        codigoPais: paisSeleccionado.iso2,
+                        nombrePais: paisSeleccionado.name,
+                        foto: user.photoURL || "",
+                        fechaRegistro: new Date().toISOString(),
+                        metodoRegistro: 'google',
+                        correoVerificado: true
+                    })
+                    .then(() => user.updatePassword(password))
+                    .then(() => auth.signOut())
+                    .then(() => {
+                        usuarioGoogleTemporal = null;
+                        mostrarMensaje("¡Cuenta creada exitosamente! Ahora inicia sesión.", "green");
+                        document.getElementById('g-nombre').value = "";
+                        document.getElementById('g-apellido').value = "";
+                        document.getElementById('g-password').value = "";
+                        document.getElementById('g-confirm').value = "";
+                        if (telefonoInputInstance) telefonoInputInstance.setNumber("");
+                        setTimeout(() => {
+                            document.getElementById('form-google-paso2').classList.add('hidden');
+                            document.getElementById('form-login').classList.remove('hidden');
+                            document.getElementById('login-email').value = user.email;
+                            mostrarMensaje("");
+                        }, 2000);
+                    });
+                })
+                .catch((error) => mostrarMensaje("Error: " + error.message, "red"));
         }
 
         function cancelarRegistroGoogle() {
