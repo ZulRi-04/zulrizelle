@@ -282,7 +282,6 @@
             });
             
             console.log(`📸 Total de fotos cargadas: ${todasLasFotos.length}`);
-            console.log('📋 Fotos:', todasLasFotos);
             
             todasLasFotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
             actualizarContadores();
@@ -307,9 +306,11 @@
     function pintarGaleria() {
         galeria.innerHTML = '';
 
-        const fotosFiltradas = todasLasFotos.filter(f => f.estado === filtroActual);
+        // ⭐ CORRECCIÓN AQUÍ: Mapear 'pendientes' a 'pendiente'
+        const estadoBuscado = filtroActual === 'pendientes' ? 'pendiente' : filtroActual;
+        const fotosFiltradas = todasLasFotos.filter(f => f.estado === estadoBuscado);
         
-        console.log(`🎨 Mostrando ${fotosFiltradas.length} fotos en pestaña "${filtroActual}"`);
+        console.log(`🎨 Mostrando ${fotosFiltradas.length} fotos en pestaña "${filtroActual}" (buscando estado: "${estadoBuscado}")`);
         
         vacio.hidden = fotosFiltradas.length > 0;
 
