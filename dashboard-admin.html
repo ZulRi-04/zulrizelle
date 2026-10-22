@@ -252,7 +252,6 @@
         
         usuarioActual = user;
         document.getElementById('user-email').textContent = user.email;
-        
         console.log('✅ Admin autenticado:', user.email);
 
         cargarFotos();
@@ -274,7 +273,6 @@
             
             snapshot.forEach(child => {
                 const data = child.val();
-                // Asegurar que todas las fotos tengan un estado
                 if (!data.estado) {
                     data.estado = 'pendiente';
                 }
@@ -306,8 +304,12 @@
     function pintarGaleria() {
         galeria.innerHTML = '';
 
-        // ⭐ CORRECCIÓN AQUÍ: Mapear 'pendientes' a 'pendiente'
-        const estadoBuscado = filtroActual === 'pendientes' ? 'pendiente' : filtroActual;
+        // ⭐ CORRECCIÓN DEFINITIVA: Mapear nombres de pestaña (plural) a estados de BD (singular)
+        let estadoBuscado = filtroActual;
+        if (filtroActual === 'pendientes') estadoBuscado = 'pendiente';
+        else if (filtroActual === 'aprobadas') estadoBuscado = 'aprobada';
+        else if (filtroActual === 'denegadas') estadoBuscado = 'denegada';
+
         const fotosFiltradas = todasLasFotos.filter(f => f.estado === estadoBuscado);
         
         console.log(`🎨 Mostrando ${fotosFiltradas.length} fotos en pestaña "${filtroActual}" (buscando estado: "${estadoBuscado}")`);
