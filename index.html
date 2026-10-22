@@ -214,6 +214,8 @@
         appId: "1:694828053364:web:b617344a0cfaefc954f221"
     };
 
+    const ADMIN_EMAIL = "richard@zulri.local";
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
@@ -223,12 +225,10 @@
     const passwordInput = document.getElementById('password');
     const togglePassword = document.getElementById('toggle-password');
 
-    // Toggle para mostrar/ocultar contraseña
     togglePassword.addEventListener('click', () => {
         const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
         passwordInput.setAttribute('type', type);
         
-        // Cambiar el icono del ojo
         if (type === 'text') {
             togglePassword.innerHTML = `
                 <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
@@ -260,11 +260,19 @@
 
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            mostrarMensaje("¡Bienvenido!", "success");
             
-            setTimeout(() => {
-                window.location.href = "dashboard.html";
-            }, 1000);
+            // Redirigir según el rol
+            if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+                mostrarMensaje("¡Bienvenido, Administrador!", "success");
+                setTimeout(() => {
+                    window.location.href = "dashboard-admin.html";
+                }, 1000);
+            } else {
+                mostrarMensaje("¡Bienvenido!", "success");
+                setTimeout(() => {
+                    window.location.href = "dashboard-usuario.html";
+                }, 1000);
+            }
             
         } catch (error) {
             console.error("Error de Firebase:", error);
