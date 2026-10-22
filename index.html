@@ -17,11 +17,34 @@
             min-height: 100vh;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
+            flex-direction: column; /* Apila los elementos verticalmente */
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
 
+        /* ===== LOGOS FUERA DEL RECUADRO ===== */
+        .logos-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem; /* Espacio entre los dos logos */
+            margin-bottom: 2rem;
+        }
+
+        .logos-wrapper img {
+            height: 70px; /* Tamaño grande */
+            width: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15)); /* Sombra sutil para que resalten */
+            transition: transform 0.3s ease;
+        }
+
+        .logos-wrapper img:hover {
+            transform: scale(1.05);
+        }
+
+        /* ===== RECUADRO BLANCO ===== */
         .container {
             background: white;
             padding: 2.5rem;
@@ -37,40 +60,12 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .logos {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .logos img {
-            height: 50px;
-            object-fit: contain;
-        }
-
-        h1 {
-            text-align: center;
-            color: #667eea;
-            margin-bottom: 0.3rem;
-            font-size: 2rem;
-            font-weight: 700;
-            letter-spacing: -1px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #6b7280;
-            font-size: 0.9rem;
-            margin-bottom: 2rem;
-        }
-
         h2 {
             text-align: center;
             color: #1f2937;
             margin-bottom: 1.5rem;
             font-size: 1.5rem;
+            font-weight: 700;
         }
 
         .form-group {
@@ -150,48 +145,34 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
-
-        .footer-note {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.75rem;
-            color: #9ca3af;
-        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- LOGOS -->
-    <div class="logos">
-        <!-- Logo de Zulri (debe estar en la raíz de tu GitHub como logo.png) -->
-        <img src="logo.png" alt="Zulri">
-        <!-- Logo de Zelle (URL directa extraída de tu enlace) -->
-        <img src="https://assets.jpmprivatebank.com/content/dam/jm-pb-aem/global/en/images/article-body/investing-body/Zelle-logo-no-tagline-CMYK-purple.png" alt="Zelle">
+    <!-- LOGOS FUERA DEL RECUADRO BLANCO -->
+    <div class="logos-wrapper">
+        <img src="logo.png" alt="Zulri Supermarket">
+        <img src="Zelle_logo.svg" alt="Zelle">
     </div>
 
-    <h1>Zulri</h1>
-    <p class="subtitle">Tu espacio personal en la nube</p>
-    
-    <h2>Iniciar sesión</h2>
-    
-    <div class="form-group">
-        <label for="email">Usuario</label>
-        <!-- type="email" es necesario para que Firebase lo acepte, pero el usuario ve "Usuario" -->
-        <input type="email" id="email" placeholder="tucorreo@ejemplo.com" autocomplete="username">
+    <!-- RECUADRO BLANCO SOLO CON EL FORMULARIO -->
+    <div class="container">
+        <h2>Iniciar sesión</h2>
+        
+        <div class="form-group">
+            <label for="email">Usuario</label>
+            <input type="email" id="email" placeholder="tucorreo@ejemplo.com" autocomplete="username">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" placeholder="Tu contraseña" autocomplete="current-password">
+        </div>
+        
+        <button id="login-btn">Entrar</button>
+        
+        <p id="message"></p>
     </div>
-    
-    <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input type="password" id="password" placeholder="Tu contraseña" autocomplete="current-password">
-    </div>
-    
-    <button id="login-btn">Entrar</button>
-    
-    <p id="message"></p>
-
-    <p class="footer-note">Conexión segura protegida por Firebase 🔒</p>
-</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -224,18 +205,15 @@
             return;
         }
 
-        // Deshabilitar botón y mostrar loader
         loginBtn.disabled = true;
         const textoOriginal = loginBtn.textContent;
         loginBtn.innerHTML = '<span class="loader"></span>Entrando...';
         mostrarMensaje("", "");
 
         try {
-            // Intentar iniciar sesión en Firebase
             await signInWithEmailAndPassword(auth, email, password);
             mostrarMensaje("¡Bienvenido, Richard!", "success");
             
-            // Redirigir al dashboard después de 1 segundo
             setTimeout(() => {
                 window.location.href = "dashboard.html";
             }, 1000);
@@ -244,7 +222,6 @@
             console.error("Error de Firebase:", error);
             mostrarMensaje(traducirError(error.code), "error");
         } finally {
-            // Restaurar botón
             loginBtn.disabled = false;
             loginBtn.textContent = textoOriginal;
         }
