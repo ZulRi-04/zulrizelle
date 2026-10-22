@@ -23,7 +23,6 @@
     }
     [hidden] { display:none !important; }
 
-    /* ===== CABECERA ===== */
     header {
         background:var(--blanco);
         border-bottom:1px solid var(--linea);
@@ -57,13 +56,11 @@
     }
     .salir:hover { background:var(--fondo); }
 
-    /* ===== CONTENIDO ===== */
     main { max-width:1100px; margin:0 auto; padding:32px 24px 60px; }
     .titulo-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:22px; }
     h1 { font-size:1.5rem; font-weight:600; letter-spacing:-.5px; }
     #contador { font-size:.85rem; color:var(--suave); }
 
-    /* ===== GALERÍA ===== */
     .galeria {
         display:grid;
         grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
@@ -108,7 +105,6 @@
         font-size:.95rem;
     }
 
-    /* ===== PANEL ADMIN ===== */
     .panel-admin {
         margin-top:40px;
         padding-top:30px;
@@ -171,7 +167,6 @@
     .lista { list-style:none; margin-top:16px; font-size:.82rem; color:var(--suave); }
     .lista li { padding:7px 0; border-top:1px solid var(--linea); }
 
-    /* ===== VISTA AMPLIADA ===== */
     .lightbox {
         position:fixed;
         inset:0;
@@ -223,12 +218,10 @@
     <div class="vacio" id="vacio" hidden>Aún no hay fotos disponibles.</div>
     <div class="estado" id="estado-fotos"></div>
 
-    <!-- SOLO EL ADMINISTRADOR VE ESTE BLOQUE -->
     <section class="panel-admin" id="admin-panel" hidden>
         <h2>Panel de administración</h2>
 
         <div class="admin-grid">
-            <!-- SUBIR FOTOS -->
             <div class="caja">
                 <h3>Subir fotos</h3>
                 <p class="ayuda">Selecciona una o varias imágenes. Se publicarán automáticamente para todos los usuarios.</p>
@@ -240,7 +233,6 @@
                 <div class="estado" id="estado-subida"></div>
             </div>
 
-            <!-- CREAR USUARIOS -->
             <div class="caja">
                 <h3>Crear nuevo usuario</h3>
                 <p class="ayuda">El nuevo usuario solo podrá ver las fotos. Compártele la contraseña de forma segura.</p>
@@ -258,7 +250,6 @@
     </section>
 </main>
 
-<!-- FOTO AMPLIADA -->
 <div class="lightbox" id="lightbox">
     <button class="cerrar" id="cerrar-lightbox" aria-label="Cerrar">×</button>
     <img id="lightbox-img" alt="Foto ampliada">
@@ -273,10 +264,6 @@
     import {
         getDatabase, ref, onValue, push, set, remove
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import {
-        getStorage, ref as storageRef, uploadBytesResumable,
-        getDownloadURL, deleteObject
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBveW42iYdCHka8Q_pFlHTR2E6ou7DTek0",
@@ -288,15 +275,15 @@
         appId: "1:694828053364:web:b617344a0cfaefc954f221"
     };
 
-    // ⚠️ Este debe ser el correo EXACTO de la cuenta Richard en Firebase
+    // ⚠️ PEGA AQUÍ TU CLAVE API DE IMGBB (la obtuviste en el Paso 1)
+    const IMGBB_API_KEY = "PEGA_TU_CLAVE_API_AQUI";
+
     const ADMIN_EMAIL = "richard@zulri.local";
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
-    const storage = getStorage(app);
 
-    // Instancia separada para crear usuarios SIN cerrar la sesión del admin
     const creador = initializeAuth(app, {
         name: "creador",
         persistence: inMemoryPersistence
@@ -320,7 +307,6 @@
         el.className = 'estado ' + tipo;
     }
 
-    // ===== CONTROL DE SESIÓN Y PERMISOS =====
     onAuthStateChanged(auth, (user) => {
         if (!user) {
             window.location.href = "index.html";
@@ -337,7 +323,6 @@
         if (esAdmin) cargarUsuarios();
     });
 
-    // ===== GALERÍA EN TIEMPO REAL =====
     function cargarFotos() {
         onValue(ref(db, 'fotos'), (snapshot) => {
             const fotos = [];
@@ -346,7 +331,7 @@
             pintarGaleria(fotos);
         }, (error) => {
             estado(document.getElementById('estado-fotos'),
-                'No se pudieron cargar las fotos. Revisa las reglas de la base de datos. (' + error.code + ')', 'error');
+                'No se pudieron cargar las fotos. (' + error.code + ')', 'error');
         });
     }
 
@@ -385,11 +370,16 @@
         });
     }
 
-    // ===== SUBIR FOTOS =====
+    // ===== SUBIR FOTOS A IMGBB =====
     archivo.addEventListener('change', async () => {
         if (!esAdmin) return;
         const archivos = Array.from(archivo.files);
         if (!archivos.length) return;
+
+        if (!IMGBB_API_KEY || IMGBB_API_KEY === "PEGA_TU_CLAVE_API_AQUI") {
+            estado(estadoSubida, '❌ Configura tu clave API de ImgBB en el código.', 'error');
+            return;
+        }
 
         archivo.disabled = true;
         progreso.hidden = false;
@@ -401,47 +391,43 @@
                 estado(estadoSubida, 'El archivo "' + file.name + '" no es una imagen.', 'error');
                 continue;
             }
-            if (file.size > 15 * 1024 * 1024) {
-                estado(estadoSubida, 'La imagen "' + file.name + '" supera los 15 MB.', 'error');
+            if (file.size > 32 * 1024 * 1024) {
+                estado(estadoSubida, 'La imagen "' + file.name + '" supera los 32 MB.', 'error');
                 continue;
             }
 
-            const id = Date.now() + '-' + Math.random().toString(36).slice(2, 8);
-            const ruta = 'fotos/' + id;
-
             try {
-                await new Promise((resolver, rechazar) => {
-                    const tarea = uploadBytesResumable(storageRef(storage, ruta), file, {
-                        'content-type': file.type
-                    });
+                estado(estadoSubida, 'Subiendo foto ' + (i + 1) + ' de ' + archivos.length + '...');
+                progreso.value = 50;
 
-                    tarea.on('state_changed',
-                        (snapshot) => {
-                            const pct = Math.round(snapshot.bytesTransferred / snapshot.totalBytes * 100);
-                            progreso.value = pct;
-                            estado(estadoSubida, 'Subiendo foto ' + (i + 1) + ' de ' + archivos.length + ' · ' + pct + '%');
-                        },
-                        (error) => rechazar(error),
-                        async () => {
-                            try {
-                                const url = await getDownloadURL(tarea.snapshot.ref);
-                                await push(ref(db, 'fotos'), {
-                                    url: url,
-                                    ruta: ruta,
-                                    nombre: file.name,
-                                    fecha: Date.now(),
-                                    subidoPor: usuarioActual.uid
-                                });
-                                resolver();
-                            } catch (e) { rechazar(e); }
-                        }
-                    );
+                const formData = new FormData();
+                formData.append('image', file);
+
+                const response = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_API_KEY, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!data.success) {
+                    throw new Error(data.error?.message || 'Error al subir');
+                }
+
+                progreso.value = 100;
+
+                await push(ref(db, 'fotos'), {
+                    url: data.data.url,
+                    nombre: file.name,
+                    fecha: Date.now(),
+                    subidoPor: usuarioActual.uid,
+                    imgbb_id: data.data.id
                 });
 
                 estado(estadoSubida, '✅ Foto publicada correctamente.', 'ok');
             } catch (error) {
                 console.error(error);
-                estado(estadoSubida, 'Error al subir: ' + error.code + '. Revisa las reglas de Storage.', 'error');
+                estado(estadoSubida, 'Error al subir: ' + error.message, 'error');
             }
         }
 
@@ -450,20 +436,20 @@
         archivo.value = '';
     });
 
-    // ===== ELIMINAR FOTO =====
     async function eliminarFoto(foto) {
         if (!esAdmin) return;
         if (!confirm('¿Eliminar esta foto? Los usuarios dejarán de verla.')) return;
 
         try {
-            try { await deleteObject(storageRef(storage, foto.ruta)); } catch (e) { console.warn(e); }
+            // Opcional: eliminar también de ImgBB si tienes la API key
+            // await fetch('https://api.imgbb.com/1/delete?key=' + IMGBB_API_KEY + '&id=' + foto.imgbb_id, { method: 'DELETE' });
+            
             await remove(ref(db, 'fotos/' + foto.id));
         } catch (error) {
-            estado(document.getElementById('estado-fotos'), 'No se pudo eliminar: ' + error.code, 'error');
+            estado(document.getElementById('estado-fotos'), 'No se pudo eliminar: ' + error.message, 'error');
         }
     }
 
-    // ===== CREAR USUARIOS =====
     document.getElementById('form-usuario').addEventListener('submit', async (e) => {
         e.preventDefault();
         if (!esAdmin) return;
@@ -508,7 +494,6 @@
         }
     });
 
-    // ===== LISTA DE USUARIOS (solo admin) =====
     function cargarUsuarios() {
         onValue(ref(db, 'usuarios'), (snapshot) => {
             const lista = document.getElementById('lista-usuarios');
@@ -522,7 +507,6 @@
         });
     }
 
-    // ===== FOTO AMPLIADA =====
     const lightbox = document.getElementById('lightbox');
     function abrirLightbox(url) {
         document.getElementById('lightbox-img').src = url;
@@ -532,7 +516,6 @@
     lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.style.display = 'none'; });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lightbox.style.display = 'none'; });
 
-    // ===== CERRAR SESIÓN =====
     document.getElementById('salir-btn').addEventListener('click', async () => {
         await signOut(auth);
         window.location.href = "index.html";
