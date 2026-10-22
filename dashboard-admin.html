@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zulri · Panel de Administración</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/index.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -119,13 +120,13 @@
 
 <main>
     <div class="pestanas">
-        <button class="pestana activa" data-filtro="pendientes">
+        <button class="pestana activa" data-filtro="pendiente">
             ⏳ Pendientes <span class="contador alerta" id="cont-pendientes">0</span>
         </button>
-        <button class="pestana" data-filtro="aprobadas">
+        <button class="pestana" data-filtro="aprobada">
             ✓ Aprobadas <span class="contador" id="cont-aprobadas">0</span>
         </button>
-        <button class="pestana" data-filtro="denegadas">
+        <button class="pestana" data-filtro="denegada">
             ✗ Denegadas <span class="contador" id="cont-denegadas">0</span>
         </button>
     </div>
@@ -191,23 +192,13 @@
     <img id="lightbox-img" alt="Foto ampliada">
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, push, set, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<script>
+    const SUPABASE_URL = 'https://phaqrcaxyiriwbybkgpx.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoYXFyY2F4eWlyaXdieWJrZ3B4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2MzI2ODQsImV4cCI6MjEwODIwODY4NH0.hP6uAgWgJXnN5tSjmtbSe9Go26zAlHk3qdUkHNRlkRQ';
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBveW42iYdCHka8Q_pFlHTR2E6ou7DTek0",
-        authDomain: "zulri-1c741.firebaseapp.com",
-        databaseURL: "https://zulri-1c741-default-rtdb.firebaseio.com",
-        projectId: "zulri-1c741",
-        storageBucket: "zulri-1c741.firebasestorage.app",
-        messagingSenderId: "694828053364",
-        appId: "1:694828053364:web:b617344a0cfaefc954f221"
-    };
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const IMGBB_API_KEY = "05a3f5378c00a0a3a197b19c3343959e";
-    const ADMIN_EMAIL = "richard@zulri.local";
 
     const OPCIONES_COMPRESION = {
         maxSizeMB: 1,
@@ -216,13 +207,9 @@
         fileType: 'image/jpeg'
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
     let usuarioActual = null;
     let usuarioSeleccionado = null;
-    let filtroActual = 'pendientes';
+    let filtroActual = 'pendiente';
     let todasLasFotos = [];
 
     const galeria = document.getElementById('galeria');
@@ -238,64 +225,56 @@
         el.className = 'estado ' + tipo;
     }
 
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
+    async function verificarSesion() {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
             window.location.href = "index.html";
             return;
         }
-        
-        if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+
+        const { data: usuarioData } = await supabase
+            .from('usuarios')
+            .select('rol, email')
+            .eq('id', session.user.id)
+            .single();
+
+        if (!usuarioData || usuarioData.rol !== 'admin') {
             alert("Acceso denegado.");
             window.location.href = "dashboard-usuario.html";
             return;
         }
-        
-        usuarioActual = user;
-        document.getElementById('user-email').textContent = user.email;
-        console.log('✅ Admin autenticado:', user.email);
+
+        usuarioActual = session.user;
+        document.getElementById('user-email').textContent = usuarioData.email;
 
         cargarFotos();
         cargarUsuarios();
-    });
+    }
 
-    function cargarFotos() {
-        console.log('📡 Escuchando cambios en fotos...');
-        
-        onValue(ref(db, 'fotos'), (snapshot) => {
-            todasLasFotos = [];
-            
-            if (!snapshot.exists()) {
-                console.log('⚠️ No hay fotos en la base de datos');
-                actualizarContadores();
-                pintarGaleria();
-                return;
-            }
-            
-            snapshot.forEach(child => {
-                const data = child.val();
-                if (!data.estado) {
-                    data.estado = 'pendiente';
-                }
-                todasLasFotos.push({ id: child.key, ...data });
-            });
-            
-            console.log(`📸 Total de fotos cargadas: ${todasLasFotos.length}`);
-            
-            todasLasFotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
-            actualizarContadores();
-            pintarGaleria();
-        }, (error) => {
-            console.error('❌ Error al cargar fotos:', error);
-        });
+    verificarSesion();
+
+    async function cargarFotos() {
+        const { data, error } = await supabase
+            .from('fotos')
+            .select('*')
+            .order('fecha', { ascending: false });
+
+        if (error) {
+            console.error('Error al cargar fotos:', error);
+            return;
+        }
+
+        todasLasFotos = data || [];
+        actualizarContadores();
+        pintarGaleria();
     }
 
     function actualizarContadores() {
         const pendientes = todasLasFotos.filter(f => f.estado === 'pendiente').length;
         const aprobadas = todasLasFotos.filter(f => f.estado === 'aprobada').length;
         const denegadas = todasLasFotos.filter(f => f.estado === 'denegada').length;
-        
-        console.log(`📊 Contadores - Pendientes: ${pendientes}, Aprobadas: ${aprobadas}, Denegadas: ${denegadas}`);
-        
+
         document.getElementById('cont-pendientes').textContent = pendientes;
         document.getElementById('cont-aprobadas').textContent = aprobadas;
         document.getElementById('cont-denegadas').textContent = denegadas;
@@ -304,16 +283,7 @@
     function pintarGaleria() {
         galeria.innerHTML = '';
 
-        // ⭐ CORRECCIÓN DEFINITIVA: Mapear nombres de pestaña (plural) a estados de BD (singular)
-        let estadoBuscado = filtroActual;
-        if (filtroActual === 'pendientes') estadoBuscado = 'pendiente';
-        else if (filtroActual === 'aprobadas') estadoBuscado = 'aprobada';
-        else if (filtroActual === 'denegadas') estadoBuscado = 'denegada';
-
-        const fotosFiltradas = todasLasFotos.filter(f => f.estado === estadoBuscado);
-        
-        console.log(`🎨 Mostrando ${fotosFiltradas.length} fotos en pestaña "${filtroActual}" (buscando estado: "${estadoBuscado}")`);
-        
+        const fotosFiltradas = todasLasFotos.filter(f => f.estado === filtroActual);
         vacio.hidden = fotosFiltradas.length > 0;
 
         fotosFiltradas.forEach(foto => {
@@ -342,7 +312,7 @@
             fila2.className = 'pie-fila';
             const autor = document.createElement('span');
             autor.className = 'pie-autor';
-            autor.textContent = '👤 ' + (foto.subidoPorNombre || 'Admin');
+            autor.textContent = '👤 ' + (foto.subido_por_nombre || 'Admin');
             fila2.appendChild(autor);
             
             const fecha = document.createElement('span');
@@ -384,23 +354,33 @@
     }
 
     async function cambiarEstado(foto, nuevoEstado) {
-        console.log(`🔄 Cambiando estado de foto ${foto.id} a "${nuevoEstado}"`);
-        try {
-            await update(ref(db, 'fotos/' + foto.id), { estado: nuevoEstado });
-            console.log('✅ Estado actualizado correctamente');
-        } catch (error) {
-            console.error('❌ Error al cambiar estado:', error);
+        const { error } = await supabase
+            .from('fotos')
+            .update({ estado: nuevoEstado })
+            .eq('id', foto.id);
+
+        if (error) {
             alert('Error: ' + error.message);
+            return;
         }
+
+        await cargarFotos();
     }
 
     async function eliminarFoto(foto) {
         if (!confirm('¿Eliminar esta foto permanentemente?')) return;
-        try {
-            await remove(ref(db, 'fotos/' + foto.id));
-        } catch (error) {
+
+        const { error } = await supabase
+            .from('fotos')
+            .delete()
+            .eq('id', foto.id);
+
+        if (error) {
             alert('Error: ' + error.message);
+            return;
         }
+
+        await cargarFotos();
     }
 
     document.querySelectorAll('.pestana').forEach(btn => {
@@ -408,7 +388,6 @@
             document.querySelectorAll('.pestana').forEach(b => b.classList.remove('activa'));
             btn.classList.add('activa');
             filtroActual = btn.dataset.filtro;
-            console.log(`🔀 Cambiando a pestaña: ${filtroActual}`);
             pintarGaleria();
         });
     });
@@ -429,12 +408,12 @@
             }
 
             try {
-                estado(estadoSubida, `Comprimiendo foto ${i + 1} de ${archivos.length}...`);
+                estado(estadoSubida, `Comprimiendo foto ${i + 1}...`);
                 progreso.value = 20;
 
                 const imagenComprimida = await imageCompression(file, OPCIONES_COMPRESION);
 
-                estado(estadoSubida, `Subiendo foto ${i + 1} de ${archivos.length}...`);
+                estado(estadoSubida, `Subiendo foto ${i + 1}...`);
                 progreso.value = 50;
 
                 const formData = new FormData();
@@ -453,15 +432,19 @@
 
                 progreso.value = 90;
 
-                await push(ref(db, 'fotos'), {
-                    url: data.data.url,
-                    nombre: file.name,
-                    fecha: Date.now(),
-                    subidoPor: usuarioActual.uid,
-                    subidoPorNombre: 'Admin',
-                    imgbb_id: data.data.id,
-                    estado: 'aprobada'
-                });
+                const { error } = await supabase
+                    .from('fotos')
+                    .insert({
+                        url: data.data.url,
+                        nombre: file.name,
+                        fecha: Date.now(),
+                        subido_por: usuarioActual.id,
+                        subido_por_nombre: 'Admin',
+                        imgbb_id: data.data.id,
+                        estado: 'aprobada'
+                    });
+
+                if (error) throw error;
 
                 estado(estadoSubida, '✅ Foto publicada.', 'ok');
             } catch (error) {
@@ -473,6 +456,7 @@
         progreso.hidden = true;
         archivo.disabled = false;
         archivo.value = '';
+        await cargarFotos();
     });
 
     document.getElementById('form-usuario').addEventListener('submit', async (e) => {
@@ -482,7 +466,7 @@
         const clave = document.getElementById('nueva-clave').value;
 
         if (!/^[a-zA-Z0-9_-]{3,20}$/.test(nombre)) {
-            estado(estadoUsuario, 'Usa entre 3 y 20 letras, números, guiones o guiones bajos.', 'error');
+            estado(estadoUsuario, 'Usa entre 3 y 20 letras, números o guiones.', 'error');
             return;
         }
         if (clave.length < 6) {
@@ -495,98 +479,87 @@
 
         try {
             const email = nombre.toLowerCase() + '@zulri.local';
-            
-            const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${firebaseConfig.apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password: clave, returnSecureToken: true })
-            });
 
-            const data = await response.json();
-
-            if (data.error) {
-                throw new Error(data.error.message);
-            }
-
-            const uid = data.localId;
-
-            await set(ref(db, 'usuarios/' + uid), {
-                nombre: nombre,
+            const { data: authData, error: authError } = await supabase.auth.signUp({
                 email: email,
-                rol: 'lector',
-                activo: true,
-                creado: Date.now()
+                password: clave
             });
+
+            if (authError) throw authError;
+
+            const { error: usuarioError } = await supabase
+                .from('usuarios')
+                .insert({
+                    id: authData.user.id,
+                    nombre: nombre,
+                    email: email,
+                    rol: 'lector',
+                    activo: true
+                });
+
+            if (usuarioError) throw usuarioError;
 
             estado(estadoUsuario, '✅ Usuario "' + nombre + '" creado.', 'ok');
             document.getElementById('form-usuario').reset();
+            await cargarUsuarios();
         } catch (error) {
-            const msg = error.message.includes('EMAIL_EXISTS')
-                ? 'Ese nombre ya existe.'
-                : 'Error: ' + error.message;
+            console.error(error);
+            const msg = error.message.includes("already") ? 'Ese nombre ya existe.' : 'Error: ' + error.message;
             estado(estadoUsuario, msg, 'error');
         } finally {
             crearBtn.disabled = false;
         }
     });
 
-    function cargarUsuarios() {
-        onValue(ref(db, 'usuarios'), (snapshot) => {
-            const lista = document.getElementById('lista-usuarios');
-            lista.innerHTML = '';
-            
-            if (!snapshot.exists()) {
-                lista.innerHTML = '<li style="text-align:center; color:var(--suave);">No hay usuarios.</li>';
-                return;
-            }
+    async function cargarUsuarios() {
+        const { data, error } = await supabase
+            .from('usuarios')
+            .select('*')
+            .eq('activo', true)
+            .order('creado', { ascending: false });
 
-            const usuarios = [];
-            snapshot.forEach(child => {
-                const data = child.val();
-                if (data.activo !== false) {
-                    usuarios.push({ uid: child.key, ...data });
-                }
-            });
+        if (error) {
+            console.error('Error al cargar usuarios:', error);
+            return;
+        }
 
-            if (usuarios.length === 0) {
-                lista.innerHTML = '<li style="text-align:center; color:var(--suave);">No hay usuarios activos.</li>';
-                return;
-            }
+        const lista = document.getElementById('lista-usuarios');
+        lista.innerHTML = '';
 
-            usuarios.sort((a, b) => (b.creado || 0) - (a.creado || 0));
+        if (!data || data.length === 0) {
+            lista.innerHTML = '<li style="text-align:center; color:var(--suave);">No hay usuarios activos.</li>';
+            return;
+        }
 
-            usuarios.forEach(user => {
-                if (user.email === ADMIN_EMAIL) return;
+        data.forEach(user => {
+            if (user.rol === 'admin') return;
 
-                const li = document.createElement('li');
-                
-                const info = document.createElement('div');
-                info.className = 'user-info';
-                info.innerHTML = `
-                    <div class="user-nombre">${user.nombre || 'Usuario'}</div>
-                    <div class="user-fecha">Creado: ${new Date(user.creado).toLocaleDateString('es-ES')}</div>
-                `;
+            const li = document.createElement('li');
+            const info = document.createElement('div');
+            info.className = 'user-info';
+            info.innerHTML = `
+                <div class="user-nombre">${user.nombre || 'Usuario'}</div>
+                <div class="user-fecha">Creado: ${new Date(user.creado).toLocaleDateString('es-ES')}</div>
+            `;
 
-                const actions = document.createElement('div');
-                actions.className = 'user-actions';
+            const actions = document.createElement('div');
+            actions.className = 'user-actions';
 
-                const btnCambiar = document.createElement('button');
-                btnCambiar.className = 'btn-small btn-cambiar';
-                btnCambiar.textContent = 'Cambiar contraseña';
-                btnCambiar.addEventListener('click', () => abrirModalCambiar(user));
+            const btnCambiar = document.createElement('button');
+            btnCambiar.className = 'btn-small btn-cambiar';
+            btnCambiar.textContent = 'Cambiar contraseña';
+            btnCambiar.addEventListener('click', () => abrirModalCambiar(user));
 
-                const btnEliminar = document.createElement('button');
-                btnEliminar.className = 'btn-small btn-eliminar';
-                btnEliminar.textContent = 'Eliminar';
-                btnEliminar.addEventListener('click', () => eliminarUsuario(user));
+            const btnEliminar = document.createElement('button');
+            btnEliminar.className = 'btn-small btn-eliminar';
+            btnEliminar.textContent = 'Eliminar';
+            btnEliminar.addEventListener('click', () => eliminarUsuario(user));
 
-                actions.appendChild(btnCambiar);
-                actions.appendChild(btnEliminar);
-
-                li.appendChild(info);
-                li.appendChild(actions);
-                lista.appendChild(li);
-            });
+            actions.appendChild(btnCambiar);
+            actions.appendChild(btnEliminar);
+            li.appendChild(info);
+            li.appendChild(actions);
+            lista.appendChild(li);
         });
     }
 
@@ -614,20 +587,12 @@
         }
 
         try {
-            const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:update?key=${firebaseConfig.apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    localId: usuarioSeleccionado.uid,
-                    password: nuevaPassword
-                })
-            });
+            const { error } = await supabase.auth.admin.updateUserById(
+                usuarioSeleccionado.id,
+                { password: nuevaPassword }
+            );
 
-            const data = await response.json();
-
-            if (data.error) {
-                throw new Error(data.error.message);
-            }
+            if (error) throw error;
 
             estadoCambiar.textContent = '✅ Contraseña cambiada.';
             estadoCambiar.style.color = 'var(--exito)';
@@ -644,11 +609,18 @@
 
     async function eliminarUsuario(user) {
         if (!confirm(`¿Eliminar al usuario "${user.nombre}"?`)) return;
-        try {
-            await update(ref(db, 'usuarios/' + user.uid), { activo: false });
-        } catch (error) {
+
+        const { error } = await supabase
+            .from('usuarios')
+            .update({ activo: false })
+            .eq('id', user.id);
+
+        if (error) {
             alert('Error: ' + error.message);
+            return;
         }
+
+        await cargarUsuarios();
     }
 
     const lightbox = document.getElementById('lightbox');
@@ -661,7 +633,7 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lightbox.style.display = 'none'; });
 
     document.getElementById('salir-btn').addEventListener('click', async () => {
-        await signOut(auth);
+        await supabase.auth.signOut();
         window.location.href = "index.html";
     });
 </script>
