@@ -9,14 +9,9 @@
 <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     :root {
-        --fondo:#f7f8fa;
-        --blanco:#ffffff;
-        --texto:#1c1c1e;
-        --suave:#8a8f98;
-        --linea:#e6e8eb;
-        --acento:#667eea;
-        --peligro:#dc2626;
-        --exito:#16a34a;
+        --fondo:#f7f8fa; --blanco:#ffffff; --texto:#1c1c1e; --suave:#8a8f98;
+        --linea:#e6e8eb; --acento:#667eea; --peligro:#dc2626; --exito:#16a34a;
+        --proceso:#f59e0b;
     }
     body { font-family:'Inter',sans-serif; background:var(--fondo); color:var(--texto); min-height:100vh; }
     [hidden] { display:none !important; }
@@ -30,18 +25,16 @@
     .salir:hover { background:var(--fondo); }
 
     main { max-width:1100px; margin:0 auto; padding:32px 24px 60px; }
-    .titulo-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:22px; }
-    h1 { font-size:1.5rem; font-weight:600; letter-spacing:-.5px; }
-    h2 { font-size:1.1rem; margin-bottom:20px; font-weight:600; }
-    #contador { font-size:.85rem; color:var(--suave); }
+    h1 { font-size:1.5rem; font-weight:600; letter-spacing:-.5px; margin-bottom:22px; }
+    h2 { font-size:1.1rem; margin-bottom:16px; font-weight:600; }
 
-    .galeria { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:20px; }
-    .tarjeta { background:var(--blanco); border:1px solid var(--linea); border-radius:12px; overflow:hidden; position:relative; transition:transform .2s, box-shadow .2s; }
-    .tarjeta:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.06); }
-    .tarjeta img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; cursor:zoom-in; }
-    .pie { padding:12px 14px; font-size:.8rem; color:var(--suave); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .eliminar { position:absolute; top:10px; right:10px; width:30px; height:30px; border:none; border-radius:50%; background:rgba(255,255,255,.95); color:var(--peligro); font-size:1.1rem; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.15); }
-    .vacio { padding:70px 20px; text-align:center; color:var(--suave); background:var(--blanco); border:1px dashed var(--linea); border-radius:12px; font-size:.95rem; }
+    /* Pestañas */
+    .pestanas { display:flex; gap:8px; margin-bottom:22px; border-bottom:1px solid var(--linea); flex-wrap:wrap; }
+    .pestana { padding:10px 18px; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-size:.9rem; color:var(--suave); font-weight:500; transition:.2s; }
+    .pestana:hover { color:var(--texto); }
+    .pestana.activa { color:var(--acento); border-bottom-color:var(--acento); }
+    .pestana .contador { display:inline-block; background:var(--fondo); padding:2px 8px; border-radius:10px; font-size:.75rem; margin-left:6px; }
+    .pestana .contador.alerta { background:#fef3c7; color:#92400e; }
 
     .seccion { margin-top:40px; padding-top:30px; border-top:1px solid var(--linea); }
     .admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
@@ -75,6 +68,26 @@
     .btn-eliminar { background:var(--peligro); color:white; }
     .btn-eliminar:hover { background:#b91c1c; }
 
+    /* Galería */
+    .galeria { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:20px; }
+    .tarjeta { background:var(--blanco); border:1px solid var(--linea); border-radius:12px; overflow:hidden; transition:transform .2s, box-shadow .2s; position:relative; }
+    .tarjeta:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.06); }
+    .tarjeta img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; cursor:zoom-in; }
+    .pie { padding:12px 14px; font-size:.8rem; color:var(--suave); display:flex; flex-direction:column; gap:6px; }
+    .pie-fila { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .pie-nombre { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .pie-autor { font-size:.7rem; color:var(--acento); font-weight:500; }
+
+    .acciones-foto { display:flex; gap:6px; padding:0 14px 12px; }
+    .btn-aprobar { flex:1; padding:8px; background:var(--exito); color:white; border:none; border-radius:6px; font-size:.8rem; font-weight:600; cursor:pointer; transition:.2s; }
+    .btn-aprobar:hover { background:#15803d; }
+    .btn-denegar { flex:1; padding:8px; background:var(--peligro); color:white; border:none; border-radius:6px; font-size:.8rem; font-weight:600; cursor:pointer; transition:.2s; }
+    .btn-denegar:hover { background:#b91c1c; }
+    .btn-eliminar-foto { padding:8px 12px; background:var(--linea); color:var(--texto); border:none; border-radius:6px; font-size:.8rem; cursor:pointer; transition:.2s; }
+    .btn-eliminar-foto:hover { background:#d1d5db; }
+
+    .vacio { padding:70px 20px; text-align:center; color:var(--suave); background:var(--blanco); border:1px dashed var(--linea); border-radius:12px; font-size:.95rem; }
+
     .modal { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:200; padding:20px; }
     .modal-content { background:var(--blanco); border-radius:12px; padding:24px; max-width:400px; width:100%; }
     .modal h3 { margin-bottom:16px; }
@@ -84,7 +97,7 @@
 
     .lightbox { position:fixed; inset:0; background:rgba(0,0,0,.92); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
     .lightbox img { max-width:94vw; max-height:86vh; object-fit:contain; border-radius:6px; }
-    .cerrar { position:absolute; top:20px; right:26px; background:none; border:none; color:white; font-size:2rem; cursor:pointer; }
+    .cerrar-lb { position:absolute; top:20px; right:26px; background:none; border:none; color:white; font-size:2rem; cursor:pointer; }
 
     @media(max-width:760px){
         header { padding:16px 20px; }
@@ -107,22 +120,30 @@
 </header>
 
 <main>
-    <div class="titulo-row">
-        <h1>Fotos</h1>
-        <span id="contador"></span>
+    <!-- PESTAÑAS DE FOTOS -->
+    <div class="pestanas">
+        <button class="pestana activa" data-filtro="pendientes">
+            ⏳ Pendientes <span class="contador alerta" id="cont-pendientes">0</span>
+        </button>
+        <button class="pestana" data-filtro="aprobadas">
+            ✓ Aprobadas <span class="contador" id="cont-aprobadas">0</span>
+        </button>
+        <button class="pestana" data-filtro="denegadas">
+            ✗ Denegadas <span class="contador" id="cont-denegadas">0</span>
+        </button>
     </div>
 
     <div class="galeria" id="galeria"></div>
-    <div class="vacio" id="vacio" hidden>Aún no hay fotos disponibles.</div>
-    <div class="estado" id="estado-fotos"></div>
+    <div class="vacio" id="vacio" hidden>No hay fotos en esta categoría.</div>
 
+    <!-- SECCIÓN DE ADMINISTRACIÓN -->
     <section class="seccion">
-        <h2>Panel de administración</h2>
+        <h2>Administración</h2>
 
         <div class="admin-grid">
             <div class="caja">
-                <h3>Subir fotos</h3>
-                <p class="ayuda">Selecciona una o varias imágenes. Se comprimirán automáticamente antes de subirse para optimizar el espacio.</p>
+                <h3>Subir fotos directamente</h3>
+                <p class="ayuda">Estas fotos se publican aprobadas automáticamente.</p>
                 <label class="zona" for="archivo">📷 Haz clic para elegir fotos</label>
                 <input type="file" id="archivo" accept="image/*" multiple>
                 <progress id="progreso" value="0" max="100" hidden></progress>
@@ -131,11 +152,11 @@
 
             <div class="caja">
                 <h3>Crear nuevo usuario</h3>
-                <p class="ayuda">El nuevo usuario solo podrá ver las fotos. Compártele la contraseña de forma segura.</p>
+                <p class="ayuda">El nuevo usuario solo podrá ver fotos y subir las suyas para aprobación.</p>
                 <form id="form-usuario">
                     <label for="nuevo-usuario">Nombre de usuario</label>
                     <input type="text" id="nuevo-usuario" placeholder="ej: ana" autocomplete="off" required>
-                    <label for="nueva-clave">Contraseña temporal (mínimo 6 caracteres)</label>
+                    <label for="nueva-clave">Contraseña (mínimo 6 caracteres)</label>
                     <input type="password" id="nueva-clave" placeholder="Contraseña" autocomplete="new-password" required>
                     <button type="submit" class="btn" id="crear-btn">Crear usuario</button>
                 </form>
@@ -148,15 +169,14 @@
         <h2>Gestión de usuarios</h2>
         <div class="caja">
             <h3>Usuarios activos</h3>
-            <p class="ayuda">Lista de usuarios activos. Puedes eliminarlos (ocultarlos) o cambiarles la contraseña.</p>
             <ul class="lista-usuarios" id="lista-usuarios">
-                <li style="text-align:center; color:var(--suave);">Cargando usuarios...</li>
+                <li style="text-align:center; color:var(--suave);">Cargando...</li>
             </ul>
         </div>
     </section>
 </main>
 
-<!-- Modal para cambiar contraseña -->
+<!-- Modal cambiar contraseña -->
 <div class="modal" id="modal-cambiar">
     <div class="modal-content">
         <h3>Cambiar contraseña</h3>
@@ -172,7 +192,7 @@
 </div>
 
 <div class="lightbox" id="lightbox">
-    <button class="cerrar" id="cerrar-lightbox" aria-label="Cerrar">×</button>
+    <button class="cerrar-lb" id="cerrar-lightbox" aria-label="Cerrar">×</button>
     <img id="lightbox-img" alt="Foto ampliada">
 </div>
 
@@ -194,12 +214,11 @@
     const IMGBB_API_KEY = "05a3f5378c00a0a3a197b19c3343959e";
     const ADMIN_EMAIL = "richard@zulri.local";
 
-    // Configuración de compresión de imágenes
     const OPCIONES_COMPRESION = {
-        maxSizeMB: 1,           // Tamaño máximo: 1 MB
-        maxWidthOrHeight: 1280, // Resolución máxima: 1280px (el lado más largo)
-        useWebWorker: true,     // Usa un worker para no bloquear la interfaz
-        fileType: 'image/jpeg'  // Convertir todo a JPEG para mejor compresión
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1280,
+        useWebWorker: true,
+        fileType: 'image/jpeg'
     };
 
     const app = initializeApp(firebaseConfig);
@@ -208,10 +227,11 @@
 
     let usuarioActual = null;
     let usuarioSeleccionado = null;
+    let filtroActual = 'pendientes';
+    let todasLasFotos = [];
 
     const galeria = document.getElementById('galeria');
     const vacio = document.getElementById('vacio');
-    const contador = document.getElementById('contador');
     const archivo = document.getElementById('archivo');
     const progreso = document.getElementById('progreso');
     const estadoSubida = document.getElementById('estado-subida');
@@ -230,7 +250,7 @@
         }
         
         if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-            alert("Acceso denegado. Esta página es solo para administradores.");
+            alert("Acceso denegado.");
             window.location.href = "dashboard-usuario.html";
             return;
         }
@@ -242,21 +262,36 @@
         cargarUsuarios();
     });
 
+    // ===== CARGAR FOTOS =====
     function cargarFotos() {
         onValue(ref(db, 'fotos'), (snapshot) => {
-            const fotos = [];
-            snapshot.forEach(child => fotos.push({ id: child.key, ...child.val() }));
-            fotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
-            pintarGaleria(fotos);
+            todasLasFotos = [];
+            snapshot.forEach(child => {
+                todasLasFotos.push({ id: child.key, ...child.val() });
+            });
+            todasLasFotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
+            actualizarContadores();
+            pintarGaleria();
         });
     }
 
-    function pintarGaleria(fotos) {
-        galeria.innerHTML = '';
-        contador.textContent = fotos.length + (fotos.length === 1 ? ' foto' : ' fotos');
-        vacio.hidden = fotos.length > 0;
+    function actualizarContadores() {
+        const pendientes = todasLasFotos.filter(f => f.estado === 'pendiente').length;
+        const aprobadas = todasLasFotos.filter(f => f.estado === 'aprobada').length;
+        const denegadas = todasLasFotos.filter(f => f.estado === 'denegada').length;
+        
+        document.getElementById('cont-pendientes').textContent = pendientes;
+        document.getElementById('cont-aprobadas').textContent = aprobadas;
+        document.getElementById('cont-denegadas').textContent = denegadas;
+    }
 
-        fotos.forEach(foto => {
+    function pintarGaleria() {
+        galeria.innerHTML = '';
+
+        const fotosFiltradas = todasLasFotos.filter(f => f.estado === filtroActual);
+        vacio.hidden = fotosFiltradas.length > 0;
+
+        fotosFiltradas.forEach(foto => {
             const tarjeta = document.createElement('div');
             tarjeta.className = 'tarjeta';
 
@@ -265,26 +300,93 @@
             img.alt = foto.nombre || 'Foto';
             img.loading = 'lazy';
             img.addEventListener('click', () => abrirLightbox(foto.url));
-
             tarjeta.appendChild(img);
-
-            const btn = document.createElement('button');
-            btn.className = 'eliminar';
-            btn.textContent = '×';
-            btn.title = 'Eliminar foto';
-            btn.addEventListener('click', () => eliminarFoto(foto));
-            tarjeta.appendChild(btn);
 
             const pie = document.createElement('div');
             pie.className = 'pie';
-            pie.textContent = foto.nombre || 'Foto';
+
+            const fila1 = document.createElement('div');
+            fila1.className = 'pie-fila';
+            const nombre = document.createElement('span');
+            nombre.className = 'pie-nombre';
+            nombre.textContent = foto.nombre || 'Foto';
+            fila1.appendChild(nombre);
+            pie.appendChild(fila1);
+
+            const fila2 = document.createElement('div');
+            fila2.className = 'pie-fila';
+            const autor = document.createElement('span');
+            autor.className = 'pie-autor';
+            autor.textContent = '👤 ' + (foto.subidoPorNombre || 'Admin');
+            fila2.appendChild(autor);
+            
+            const fecha = document.createElement('span');
+            fecha.style.fontSize = '.7rem';
+            fecha.style.color = 'var(--suave)';
+            fecha.textContent = new Date(foto.fecha).toLocaleDateString('es-ES');
+            fila2.appendChild(fecha);
+            pie.appendChild(fila2);
+
             tarjeta.appendChild(pie);
 
+            // Botones de acción según el estado
+            const acciones = document.createElement('div');
+            acciones.className = 'acciones-foto';
+
+            if (foto.estado === 'pendiente') {
+                const btnAprobar = document.createElement('button');
+                btnAprobar.className = 'btn-aprobar';
+                btnAprobar.textContent = '✓ Aprobar';
+                btnAprobar.addEventListener('click', () => cambiarEstado(foto, 'aprobada'));
+
+                const btnDenegar = document.createElement('button');
+                btnDenegar.className = 'btn-denegar';
+                btnDenegar.textContent = '✗ Denegar';
+                btnDenegar.addEventListener('click', () => cambiarEstado(foto, 'denegada'));
+
+                acciones.appendChild(btnAprobar);
+                acciones.appendChild(btnDenegar);
+            } else {
+                const btnEliminar = document.createElement('button');
+                btnEliminar.className = 'btn-eliminar-foto';
+                btnEliminar.textContent = '🗑 Eliminar';
+                btnEliminar.addEventListener('click', () => eliminarFoto(foto));
+                acciones.appendChild(btnEliminar);
+            }
+
+            tarjeta.appendChild(acciones);
             galeria.appendChild(tarjeta);
         });
     }
 
-    // ===== SUBIR FOTOS CON COMPRESIÓN AUTOMÁTICA =====
+    async function cambiarEstado(foto, nuevoEstado) {
+        try {
+            await update(ref(db, 'fotos/' + foto.id), { estado: nuevoEstado });
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    async function eliminarFoto(foto) {
+        if (!confirm('¿Eliminar esta foto permanentemente?')) return;
+        try {
+            await remove(ref(db, 'fotos/' + foto.id));
+        } catch (error) {
+            alert('Error: ' + error.message);
+        }
+    }
+
+    // ===== PESTAÑAS =====
+    document.querySelectorAll('.pestana').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.pestana').forEach(b => b.classList.remove('activa'));
+            btn.classList.add('activa');
+            filtroActual = btn.dataset.filtro;
+            pintarGaleria();
+        });
+    });
+
+    // ===== SUBIR FOTOS (APROBADAS DIRECTAMENTE) =====
     archivo.addEventListener('change', async () => {
         const archivos = Array.from(archivo.files);
         if (!archivos.length) return;
@@ -301,19 +403,11 @@
             }
 
             try {
-                // PASO 1: COMPRIMIR la imagen
                 estado(estadoSubida, `Comprimiendo foto ${i + 1} de ${archivos.length}...`);
                 progreso.value = 20;
 
                 const imagenComprimida = await imageCompression(file, OPCIONES_COMPRESION);
 
-                const tamañoOriginal = (file.size / 1024 / 1024).toFixed(2);
-                const tamañoComprimido = (imagenComprimida.size / 1024 / 1024).toFixed(2);
-                const reduccion = Math.round((1 - imagenComprimida.size / file.size) * 100);
-
-                console.log(`Comprimido: ${tamañoOriginal}MB → ${tamañoComprimido}MB (${reduccion}% reducción)`);
-
-                // PASO 2: SUBIR a ImgBB
                 estado(estadoSubida, `Subiendo foto ${i + 1} de ${archivos.length}...`);
                 progreso.value = 50;
 
@@ -333,18 +427,17 @@
 
                 progreso.value = 90;
 
-                // PASO 3: Guardar en Firebase Realtime Database
                 await push(ref(db, 'fotos'), {
                     url: data.data.url,
                     nombre: file.name,
                     fecha: Date.now(),
                     subidoPor: usuarioActual.uid,
+                    subidoPorNombre: 'Admin',
                     imgbb_id: data.data.id,
-                    tamañoOriginal: tamañoOriginal + ' MB',
-                    tamañoComprimido: tamañoComprimido + ' MB'
+                    estado: 'aprobada'  // ⭐ Las del admin se aprueban automáticamente
                 });
 
-                estado(estadoSubida, `✅ Foto publicada (${tamañoOriginal}MB → ${tamañoComprimido}MB, -${reduccion}%)`, 'ok');
+                estado(estadoSubida, '✅ Foto publicada.', 'ok');
             } catch (error) {
                 console.error(error);
                 estado(estadoSubida, 'Error: ' + error.message, 'error');
@@ -355,16 +448,6 @@
         archivo.disabled = false;
         archivo.value = '';
     });
-
-    async function eliminarFoto(foto) {
-        if (!confirm('¿Eliminar esta foto? Los usuarios dejarán de verla.')) return;
-
-        try {
-            await remove(ref(db, 'fotos/' + foto.id));
-        } catch (error) {
-            estado(document.getElementById('estado-fotos'), 'No se pudo eliminar: ' + error.message, 'error');
-        }
-    }
 
     // ===== CREAR USUARIO =====
     document.getElementById('form-usuario').addEventListener('submit', async (e) => {
@@ -410,33 +493,32 @@
                 creado: Date.now()
             });
 
-            estado(estadoUsuario, '✅ Usuario "' + nombre + '" creado correctamente.', 'ok');
+            estado(estadoUsuario, '✅ Usuario "' + nombre + '" creado.', 'ok');
             document.getElementById('form-usuario').reset();
         } catch (error) {
             const msg = error.message.includes('EMAIL_EXISTS')
-                ? 'Ese nombre de usuario ya existe. Elige otro.'
-                : 'No se pudo crear: ' + error.message;
+                ? 'Ese nombre ya existe.'
+                : 'Error: ' + error.message;
             estado(estadoUsuario, msg, 'error');
         } finally {
             crearBtn.disabled = false;
         }
     });
 
-    // ===== LISTAR SOLO USUARIOS ACTIVOS =====
+    // ===== LISTAR USUARIOS =====
     function cargarUsuarios() {
         onValue(ref(db, 'usuarios'), (snapshot) => {
             const lista = document.getElementById('lista-usuarios');
             lista.innerHTML = '';
             
             if (!snapshot.exists()) {
-                lista.innerHTML = '<li style="text-align:center; color:var(--suave);">No hay usuarios creados aún.</li>';
+                lista.innerHTML = '<li style="text-align:center; color:var(--suave);">No hay usuarios.</li>';
                 return;
             }
 
             const usuarios = [];
             snapshot.forEach(child => {
                 const data = child.val();
-                // ⭐ FILTRO: Solo mostrar usuarios ACTIVOS
                 if (data.activo !== false) {
                     usuarios.push({ uid: child.key, ...data });
                 }
@@ -502,7 +584,7 @@
         const estadoCambiar = document.getElementById('estado-cambiar');
 
         if (nuevaPassword.length < 6) {
-            estadoCambiar.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+            estadoCambiar.textContent = 'Mínimo 6 caracteres.';
             estadoCambiar.style.color = 'var(--peligro)';
             return;
         }
@@ -523,7 +605,7 @@
                 throw new Error(data.error.message);
             }
 
-            estadoCambiar.textContent = '✅ Contraseña cambiada correctamente.';
+            estadoCambiar.textContent = '✅ Contraseña cambiada.';
             estadoCambiar.style.color = 'var(--exito)';
 
             setTimeout(() => {
@@ -537,8 +619,7 @@
     });
 
     async function eliminarUsuario(user) {
-        if (!confirm(`¿Eliminar al usuario "${user.nombre}"? Ya no podrá entrar.`)) return;
-
+        if (!confirm(`¿Eliminar al usuario "${user.nombre}"?`)) return;
         try {
             await update(ref(db, 'usuarios/' + user.uid), { activo: false });
         } catch (error) {
@@ -546,6 +627,7 @@
         }
     }
 
+    // ===== LIGHTBOX =====
     const lightbox = document.getElementById('lightbox');
     function abrirLightbox(url) {
         document.getElementById('lightbox-img').src = url;
