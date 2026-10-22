@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zulri - Acceso</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/index.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
@@ -63,26 +64,11 @@
         <p id="message"></p>
     </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<script>
+    const SUPABASE_URL = 'https://phaqrcaxyiriwbybkgpx.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoYXFyY2F4eWlyaXdieWJrZ3B4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2MzI2ODQsImV4cCI6MjEwODIwODY4NH0.hP6uAgWgJXnN5tSjmtbSe9Go26zAlHk3qdUkHNRlkRQ';
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBveW42iYdCHka8Q_pFlHTR2E6ou7DTek0",
-        authDomain: "zulri-1c741.firebaseapp.com",
-        databaseURL: "https://zulri-1c741-default-rtdb.firebaseio.com",
-        projectId: "zulri-1c741",
-        storageBucket: "zulri-1c741.firebasestorage.app",
-        messagingSenderId: "694828053364",
-        appId: "1:694828053364:web:b617344a0cfaefc954f221"
-    };
-
-    const ADMIN_EMAIL = "richard@zulri.local";
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const loginBtn = document.getElementById('login-btn');
     const message = document.getElementById('message');
@@ -124,64 +110,52 @@
         mostrarMensaje("", "");
 
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-            // Si es el admin, redirigir directamente
-            if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-                mostrarMensaje("¡Bienvenido, Administrador!", "success");
-                setTimeout(() => {
-                    window.location.href = "dashboard-admin.html";
-                }, 1000);
-                return;
-            }
+            if (error) throw error;
 
-            // Verificar si el usuario existe en la base de datos
-            const userSnapshot = await get(ref(db, 'usuarios/' + user.uid));
-            
-            if (!userSnapshot.exists()) {
-                // Usuario no existe en la base de datos, crearlo como activo
-                console.log("Usuario no encontrado en DB, creándolo como activo...");
-                await set(ref(db, 'usuarios/' + user.uid), {
-                    nombre: username,
-                    email: email,
-                    rol: 'lector',
-                    activo: true,
-                    creado: Date.now()
-                });
-                
-                mostrarMensaje("¡Bienvenido!", "success");
-                setTimeout(() => {
-                    window.location.href = "dashboard-usuario.html";
-                }, 1000);
-                return;
-            }
+            const { data: usuarioData, error: usuarioError } = await supabase
+                .from('usuarios')
+                .select('activo, rol')
+                .eq('id', data.user.id)
+                .single();
 
-            const userData = userSnapshot.val();
+            if (usuarioError) throw usuarioError;
 
-            // Verificar si el usuario está activo
-            if (userData.activo === false) {
-                await signOut(auth);
-                mostrarMensaje("❌ Esta cuenta ha sido desactivada. Contacta al administrador.", "error");
+            if (usuarioData.activo === false) {
+                await supabase.auth.signOut();
+                mostrarMensaje("❌ Esta cuenta ha sido desactivada.", "error");
                 loginBtn.disabled = false;
                 loginBtn.textContent = textoOriginal;
                 return;
             }
 
-            // Si no tiene el campo "activo", agregarlo como true
-            if (userData.activo === undefined) {
-                console.log("Agregando campo 'activo: true' al usuario...");
-                await set(ref(db, 'usuarios/' + user.uid + '/activo'), true);
+            if (usuarioData.rol === 'admin') {
+                mostrarMensaje("¡Bienvenido, Administrador!", "success");
+                setTimeout(() => {
+                    window.location.href = "dashboard-admin.html";
+                }, 1000);
+            } else {
+                mostrarMensaje("¡Bienvenido!", "success");
+                setTimeout(() => {
+                    window.location.href = "dashboard-usuario.html";
+                }, 1000);
             }
-
-            mostrarMensaje("¡Bienvenido!", "success");
-            setTimeout(() => {
-                window.location.href = "dashboard-usuario.html";
-            }, 1000);
             
         } catch (error) {
-            console.error("Error de Firebase:", error);
-            mostrarMensaje(traducirError(error.code), "error");
+            console.error("Error:", error);
+            let mensaje = "Ocurrió un error. Inténtalo de nuevo.";
+            
+            if (error.message.includes("Invalid login credentials")) {
+                mensaje = "Usuario o contraseña incorrectos.";
+            } else if (error.message.includes("Email not confirmed")) {
+                mensaje = "Cuenta no confirmada. Contacta al administrador.";
+            }
+            
+            mostrarMensaje(mensaje, "error");
             loginBtn.disabled = false;
             loginBtn.textContent = textoOriginal;
         }
@@ -190,19 +164,6 @@
     function mostrarMensaje(texto, tipo) {
         message.textContent = texto;
         message.className = tipo || "";
-    }
-
-    function traducirError(codigo) {
-        const errores = {
-            'auth/invalid-email': 'El usuario no tiene un formato válido.',
-            'auth/user-disabled': 'Esta cuenta ha sido deshabilitada.',
-            'auth/user-not-found': 'No existe una cuenta con este usuario.',
-            'auth/wrong-password': 'Contraseña incorrecta.',
-            'auth/invalid-credential': 'Usuario o contraseña incorrectos.',
-            'auth/too-many-requests': 'Demasiados intentos. Intenta más tarde.',
-            'auth/network-request-failed': 'Error de conexión. Revisa tu internet.'
-        };
-        return errores[codigo] || 'Ocurrió un error. Inténtalo de nuevo.';
     }
 </script>
 
