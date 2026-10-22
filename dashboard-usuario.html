@@ -5,113 +5,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zulri · Galería</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/index.css">
+<script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 <style>
     * { margin:0; padding:0; box-sizing:border-box; }
     :root {
-        --fondo:#f7f8fa;
-        --blanco:#ffffff;
-        --texto:#1c1c1e;
-        --suave:#8a8f98;
-        --linea:#e6e8eb;
-        --acento:#667eea;
+        --fondo:#f7f8fa; --blanco:#ffffff; --texto:#1c1c1e; --suave:#8a8f98;
+        --linea:#e6e8eb; --acento:#667eea; --peligro:#dc2626; --exito:#16a34a;
+        --proceso:#f59e0b;
     }
-    body {
-        font-family:'Inter',sans-serif;
-        background:var(--fondo);
-        color:var(--texto);
-        min-height:100vh;
-    }
+    body { font-family:'Inter',sans-serif; background:var(--fondo); color:var(--texto); min-height:100vh; }
     [hidden] { display:none !important; }
 
-    header {
-        background:var(--blanco);
-        border-bottom:1px solid var(--linea);
-        padding:18px 32px;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        gap:16px;
-        flex-wrap:wrap;
-    }
+    header { background:var(--blanco); border-bottom:1px solid var(--linea); padding:18px 32px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
     .logo { height:48px; width:auto; object-fit:contain; }
     .usuario-box { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
     #user-email { font-size:.85rem; color:var(--suave); }
-    .badge {
-        font-size:.7rem;
-        padding:5px 10px;
-        border-radius:20px;
-        background:#eef0ff;
-        color:var(--acento);
-        font-weight:600;
-    }
-    .salir {
-        background:none;
-        border:1px solid var(--linea);
-        padding:8px 14px;
-        border-radius:8px;
-        font-size:.85rem;
-        cursor:pointer;
-        color:var(--texto);
-        transition:.2s;
-    }
+    .badge { font-size:.7rem; padding:5px 10px; border-radius:20px; background:#eef0ff; color:var(--acento); font-weight:600; }
+    .salir { background:none; border:1px solid var(--linea); padding:8px 14px; border-radius:8px; font-size:.85rem; cursor:pointer; color:var(--texto); transition:.2s; }
     .salir:hover { background:var(--fondo); }
 
     main { max-width:1100px; margin:0 auto; padding:32px 24px 60px; }
+    h1 { font-size:1.5rem; font-weight:600; letter-spacing:-.5px; margin-bottom:22px; }
+    h2 { font-size:1.1rem; margin-bottom:16px; font-weight:600; }
+
+    /* Sección de subida */
+    .seccion-subir { background:var(--blanco); border:1px solid var(--linea); border-radius:12px; padding:24px; margin-bottom:32px; }
+    .ayuda { font-size:.8rem; color:var(--suave); margin-bottom:18px; line-height:1.5; }
+    .zona { display:block; border:2px dashed var(--linea); border-radius:10px; padding:30px 16px; text-align:center; cursor:pointer; transition:.2s; font-size:.9rem; color:var(--suave); }
+    .zona:hover { border-color:var(--acento); color:var(--acento); background:#fafaff; }
+    #archivo { display:none; }
+    progress { width:100%; height:6px; margin-top:16px; accent-color:var(--acento); }
+    .estado { font-size:.8rem; margin-top:12px; min-height:1.2em; color:var(--suave); }
+    .estado.error { color:var(--peligro); }
+    .estado.ok { color:var(--exito); }
+
+    /* Pestañas */
+    .pestanas { display:flex; gap:8px; margin-bottom:22px; border-bottom:1px solid var(--linea); }
+    .pestana { padding:10px 18px; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-size:.9rem; color:var(--suave); font-weight:500; transition:.2s; }
+    .pestana:hover { color:var(--texto); }
+    .pestana.activa { color:var(--acento); border-bottom-color:var(--acento); }
+    .pestana .contador { display:inline-block; background:var(--fondo); padding:2px 8px; border-radius:10px; font-size:.75rem; margin-left:6px; }
+
     .titulo-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:22px; }
-    h1 { font-size:1.5rem; font-weight:600; letter-spacing:-.5px; }
-    #contador { font-size:.85rem; color:var(--suave); }
+    #contador-total { font-size:.85rem; color:var(--suave); }
 
-    .galeria {
-        display:grid;
-        grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
-        gap:20px;
-    }
-    .tarjeta {
-        background:var(--blanco);
-        border:1px solid var(--linea);
-        border-radius:12px;
-        overflow:hidden;
-        transition:transform .2s, box-shadow .2s;
-    }
+    .galeria { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:20px; }
+    .tarjeta { background:var(--blanco); border:1px solid var(--linea); border-radius:12px; overflow:hidden; transition:transform .2s, box-shadow .2s; position:relative; }
     .tarjeta:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.06); }
-    .tarjeta img {
-        width:100%;
-        aspect-ratio:4/3;
-        object-fit:cover;
-        display:block;
-        cursor:zoom-in;
-    }
-    .pie { padding:12px 14px; font-size:.8rem; color:var(--suave); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .vacio {
-        padding:70px 20px;
-        text-align:center;
-        color:var(--suave);
-        background:var(--blanco);
-        border:1px dashed var(--linea);
-        border-radius:12px;
-        font-size:.95rem;
+    .tarjeta img { width:100%; aspect-ratio:4/3; object-fit:cover; display:block; cursor:zoom-in; }
+    .pie { padding:12px 14px; font-size:.8rem; color:var(--suave); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+    .pie-nombre { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    .estado-badge { font-size:.7rem; padding:3px 8px; border-radius:10px; font-weight:600; white-space:nowrap; }
+    .badge-aprobada { background:#dcfce7; color:#166534; }
+    .badge-proceso { background:#fef3c7; color:#92400e; animation: pulso 2s infinite; }
+    .badge-denegada { background:#fee2e2; color:#991b1b; }
+    .badge-mia { background:#eef0ff; color:var(--acento); }
+
+    @keyframes pulso {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
     }
 
-    .lightbox {
-        position:fixed;
-        inset:0;
-        background:rgba(0,0,0,.92);
-        display:none;
-        align-items:center;
-        justify-content:center;
-        z-index:100;
-        padding:20px;
-    }
+    .vacio { padding:70px 20px; text-align:center; color:var(--suave); background:var(--blanco); border:1px dashed var(--linea); border-radius:12px; font-size:.95rem; }
+
+    .lightbox { position:fixed; inset:0; background:rgba(0,0,0,.92); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
     .lightbox img { max-width:94vw; max-height:86vh; object-fit:contain; border-radius:6px; }
-    .cerrar {
-        position:absolute;
-        top:20px; right:26px;
-        background:none;
-        border:none;
-        color:white;
-        font-size:2rem;
-        cursor:pointer;
-    }
+    .cerrar { position:absolute; top:20px; right:26px; background:none; border:none; color:white; font-size:2rem; cursor:pointer; }
 
     @media(max-width:760px){
         header { padding:16px 20px; }
@@ -133,13 +93,24 @@
 </header>
 
 <main>
-    <div class="titulo-row">
-        <h1>Fotos</h1>
-        <span id="contador"></span>
+    <!-- SECCIÓN PARA SUBIR FOTOS -->
+    <div class="seccion-subir">
+        <h2>📷 Subir una foto</h2>
+        <p class="ayuda">Sube una foto para que el administrador la revise. Una vez aprobada, será visible para todos.</p>
+        <label class="zona" for="archivo">Haz clic para elegir una foto</label>
+        <input type="file" id="archivo" accept="image/*">
+        <progress id="progreso" value="0" max="100" hidden></progress>
+        <div class="estado" id="estado-subida"></div>
+    </div>
+
+    <!-- PESTAÑAS -->
+    <div class="pestanas">
+        <button class="pestana activa" data-filtro="aprobadas">Aprobadas <span class="contador" id="cont-aprobadas">0</span></button>
+        <button class="pestana" data-filtro="mias">Mis fotos <span class="contador" id="cont-mias">0</span></button>
     </div>
 
     <div class="galeria" id="galeria"></div>
-    <div class="vacio" id="vacio" hidden>Aún no hay fotos disponibles.</div>
+    <div class="vacio" id="vacio" hidden>No hay fotos para mostrar.</div>
 </main>
 
 <div class="lightbox" id="lightbox">
@@ -150,7 +121,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBveW42iYdCHka8Q_pFlHTR2E6ou7DTek0",
@@ -162,15 +133,33 @@
         appId: "1:694828053364:web:b617344a0cfaefc954f221"
     };
 
-    const ADMIN_EMAIL = "richard@zulri.local";
+    const IMGBB_API_KEY = "05a3f5378c00a0a3a197b19c3343959e";
+
+    const OPCIONES_COMPRESION = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1280,
+        useWebWorker: true,
+        fileType: 'image/jpeg'
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
+    let usuarioActual = null;
+    let filtroActual = 'aprobadas';
+    let todasLasFotos = [];
+
     const galeria = document.getElementById('galeria');
     const vacio = document.getElementById('vacio');
-    const contador = document.getElementById('contador');
+    const archivo = document.getElementById('archivo');
+    const progreso = document.getElementById('progreso');
+    const estadoSubida = document.getElementById('estado-subida');
+
+    function estado(el, texto, tipo = "") {
+        el.textContent = texto;
+        el.className = 'estado ' + tipo;
+    }
 
     onAuthStateChanged(auth, (user) => {
         if (!user) {
@@ -178,30 +167,48 @@
             return;
         }
         
-        if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
-            window.location.href = "dashboard-admin.html";
-            return;
-        }
-        
+        usuarioActual = user;
         document.getElementById('user-email').textContent = user.email;
         cargarFotos();
     });
 
+    // ===== CARGAR FOTOS EN TIEMPO REAL =====
     function cargarFotos() {
         onValue(ref(db, 'fotos'), (snapshot) => {
-            const fotos = [];
-            snapshot.forEach(child => fotos.push({ id: child.key, ...child.val() }));
-            fotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
-            pintarGaleria(fotos);
+            todasLasFotos = [];
+            snapshot.forEach(child => {
+                const data = child.val();
+                // Solo incluir fotos aprobadas o las mías (cualquier estado)
+                if (data.estado === 'aprobada' || data.subidoPor === usuarioActual.uid) {
+                    todasLasFotos.push({ id: child.key, ...data });
+                }
+            });
+            todasLasFotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
+            actualizarContadores();
+            pintarGaleria();
         });
     }
 
-    function pintarGaleria(fotos) {
-        galeria.innerHTML = '';
-        contador.textContent = fotos.length + (fotos.length === 1 ? ' foto' : ' fotos');
-        vacio.hidden = fotos.length > 0;
+    function actualizarContadores() {
+        const aprobadas = todasLasFotos.filter(f => f.estado === 'aprobada').length;
+        const mias = todasLasFotos.filter(f => f.subidoPor === usuarioActual.uid).length;
+        document.getElementById('cont-aprobadas').textContent = aprobadas;
+        document.getElementById('cont-mias').textContent = mias;
+    }
 
-        fotos.forEach(foto => {
+    function pintarGaleria() {
+        galeria.innerHTML = '';
+
+        let fotosFiltradas;
+        if (filtroActual === 'aprobadas') {
+            fotosFiltradas = todasLasFotos.filter(f => f.estado === 'aprobada');
+        } else {
+            fotosFiltradas = todasLasFotos.filter(f => f.subidoPor === usuarioActual.uid);
+        }
+
+        vacio.hidden = fotosFiltradas.length > 0;
+
+        fotosFiltradas.forEach(foto => {
             const tarjeta = document.createElement('div');
             tarjeta.className = 'tarjeta';
 
@@ -210,18 +217,110 @@
             img.alt = foto.nombre || 'Foto';
             img.loading = 'lazy';
             img.addEventListener('click', () => abrirLightbox(foto.url));
-
             tarjeta.appendChild(img);
 
             const pie = document.createElement('div');
             pie.className = 'pie';
-            pie.textContent = foto.nombre || 'Foto';
+
+            const nombre = document.createElement('span');
+            nombre.className = 'pie-nombre';
+            nombre.textContent = foto.nombre || 'Foto';
+            pie.appendChild(nombre);
+
+            // Badge de estado
+            const badge = document.createElement('span');
+            badge.className = 'estado-badge';
+            
+            if (foto.estado === 'aprobada') {
+                badge.className += ' badge-aprobada';
+                badge.textContent = '✓ Aprobada';
+            } else if (foto.estado === 'pendiente') {
+                badge.className += ' badge-proceso';
+                badge.textContent = '⏳ En proceso';
+            } else if (foto.estado === 'denegada') {
+                badge.className += ' badge-denegada';
+                badge.textContent = '✗ Denegada';
+            }
+            
+            pie.appendChild(badge);
             tarjeta.appendChild(pie);
 
             galeria.appendChild(tarjeta);
         });
     }
 
+    // ===== PESTAÑAS =====
+    document.querySelectorAll('.pestana').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.pestana').forEach(b => b.classList.remove('activa'));
+            btn.classList.add('activa');
+            filtroActual = btn.dataset.filtro;
+            pintarGaleria();
+        });
+    });
+
+    // ===== SUBIR FOTO =====
+    archivo.addEventListener('change', async () => {
+        const file = archivo.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            estado(estadoSubida, 'El archivo seleccionado no es una imagen.', 'error');
+            return;
+        }
+
+        archivo.disabled = true;
+        progreso.hidden = false;
+
+        try {
+            // COMPRIMIR
+            estado(estadoSubida, 'Comprimiendo imagen...');
+            progreso.value = 20;
+            const imagenComprimida = await imageCompression(file, OPCIONES_COMPRESION);
+
+            // SUBIR A IMGBB
+            estado(estadoSubida, 'Subiendo imagen...');
+            progreso.value = 50;
+
+            const formData = new FormData();
+            formData.append('image', imagenComprimida);
+
+            const response = await fetch('https://api.imgbb.com/1/upload?key=' + IMGBB_API_KEY, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!data.success) {
+                throw new Error(data.error?.message || 'Error al subir');
+            }
+
+            progreso.value = 90;
+
+            // GUARDAR EN FIREBASE COMO PENDIENTE
+            await push(ref(db, 'fotos'), {
+                url: data.data.url,
+                nombre: file.name,
+                fecha: Date.now(),
+                subidoPor: usuarioActual.uid,
+                subidoPorNombre: usuarioActual.email.split('@')[0],
+                imgbb_id: data.data.id,
+                estado: 'pendiente'  // ⭐ ESTADO PENDIENTE
+            });
+
+            estado(estadoSubida, '✅ Foto enviada. Esperando aprobación del administrador.', 'ok');
+        } catch (error) {
+            console.error(error);
+            estado(estadoSubida, 'Error: ' + error.message, 'error');
+        } finally {
+            progreso.hidden = true;
+            archivo.disabled = false;
+            archivo.value = '';
+        }
+    });
+
+    // ===== LIGHTBOX =====
     const lightbox = document.getElementById('lightbox');
     function abrirLightbox(url) {
         document.getElementById('lightbox-img').src = url;
