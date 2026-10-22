@@ -68,7 +68,7 @@
     const SUPABASE_URL = 'https://phaqrcaxyiriwbybkgpx.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoYXFyY2F4eWlyaXdieWJrZ3B4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2MzI2ODQsImV4cCI6MjEwODIwODY4NH0.hP6uAgWgJXnN5tSjmtbSe9Go26zAlHk3qdUkHNRlkRQ';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const loginBtn = document.getElementById('login-btn');
     const message = document.getElementById('message');
@@ -110,14 +110,14 @@
         mostrarMensaje("", "");
 
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password
             });
 
             if (error) throw error;
 
-            const { data: usuarioData, error: usuarioError } = await supabase
+            const { data: usuarioData, error: usuarioError } = await supabaseClient
                 .from('usuarios')
                 .select('activo, rol')
                 .eq('id', data.user.id)
@@ -126,7 +126,7 @@
             if (usuarioError) throw usuarioError;
 
             if (usuarioData.activo === false) {
-                await supabase.auth.signOut();
+                await supabaseClient.auth.signOut();
                 mostrarMensaje("❌ Esta cuenta ha sido desactivada.", "error");
                 loginBtn.disabled = false;
                 loginBtn.textContent = textoOriginal;
