@@ -228,7 +228,7 @@
     const SUPABASE_URL = 'https://phaqrcaxyiriwbybkgpx.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoYXFyY2F4eWlyaXdieWJrZ3B4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2MzI2ODQsImV4cCI6MjEwODIwODY4NH0.hP6uAgWgJXnN5tSjmtbSe9Go26zAlHk3qdUkHNRlkRQ';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const IMGBB_API_KEY = "05a3f5378c00a0a3a197b19c3343959e";
 
@@ -256,14 +256,14 @@
     }
 
     async function verificarSesion() {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         
         if (!session) {
             window.location.href = "index.html";
             return;
         }
 
-        const { data: usuarioData } = await supabase
+        const { data: usuarioData } = await supabaseClient
             .from('usuarios')
             .select('email, activo')
             .eq('id', session.user.id)
@@ -282,7 +282,7 @@
     verificarSesion();
 
     async function cargarFotos() {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('fotos')
             .select('*')
             .order('fecha', { ascending: false });
@@ -433,7 +433,7 @@
 
             progreso.value = 90;
 
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('fotos')
                 .insert({
                     url: data.data.url,
@@ -471,7 +471,7 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lightbox.style.display = 'none'; });
 
     document.getElementById('salir-btn').addEventListener('click', async () => {
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
         window.location.href = "index.html";
     });
 </script>
