@@ -28,7 +28,6 @@
     h1 { font-size:1.5rem; font-weight:600; letter-spacing:-.5px; margin-bottom:22px; }
     h2 { font-size:1.1rem; margin-bottom:16px; font-weight:600; }
 
-    /* Pestañas */
     .pestanas { display:flex; gap:8px; margin-bottom:22px; border-bottom:1px solid var(--linea); flex-wrap:wrap; }
     .pestana { padding:10px 18px; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-size:.9rem; color:var(--suave); font-weight:500; transition:.2s; }
     .pestana:hover { color:var(--texto); }
@@ -68,7 +67,6 @@
     .btn-eliminar { background:var(--peligro); color:white; }
     .btn-eliminar:hover { background:#b91c1c; }
 
-    /* Galería */
     .galeria { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:20px; }
     .tarjeta { background:var(--blanco); border:1px solid var(--linea); border-radius:12px; overflow:hidden; transition:transform .2s, box-shadow .2s; position:relative; }
     .tarjeta:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.06); }
@@ -120,7 +118,6 @@
 </header>
 
 <main>
-    <!-- PESTAÑAS DE FOTOS -->
     <div class="pestanas">
         <button class="pestana activa" data-filtro="pendientes">
             ⏳ Pendientes <span class="contador alerta" id="cont-pendientes">0</span>
@@ -136,7 +133,6 @@
     <div class="galeria" id="galeria"></div>
     <div class="vacio" id="vacio" hidden>No hay fotos en esta categoría.</div>
 
-    <!-- SECCIÓN DE ADMINISTRACIÓN -->
     <section class="seccion">
         <h2>Administración</h2>
 
@@ -176,7 +172,6 @@
     </section>
 </main>
 
-<!-- Modal cambiar contraseña -->
 <div class="modal" id="modal-cambiar">
     <div class="modal-content">
         <h3>Cambiar contraseña</h3>
@@ -262,12 +257,16 @@
         cargarUsuarios();
     });
 
-    // ===== CARGAR FOTOS =====
     function cargarFotos() {
         onValue(ref(db, 'fotos'), (snapshot) => {
             todasLasFotos = [];
             snapshot.forEach(child => {
-                todasLasFotos.push({ id: child.key, ...child.val() });
+                const data = child.val();
+                // ⭐ Normalizar: si no tiene estado, tratar como pendiente
+                if (!data.estado) {
+                    data.estado = 'pendiente';
+                }
+                todasLasFotos.push({ id: child.key, ...data });
             });
             todasLasFotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
             actualizarContadores();
@@ -329,7 +328,6 @@
 
             tarjeta.appendChild(pie);
 
-            // Botones de acción según el estado
             const acciones = document.createElement('div');
             acciones.className = 'acciones-foto';
 
@@ -376,7 +374,6 @@
         }
     }
 
-    // ===== PESTAÑAS =====
     document.querySelectorAll('.pestana').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.pestana').forEach(b => b.classList.remove('activa'));
@@ -386,7 +383,6 @@
         });
     });
 
-    // ===== SUBIR FOTOS (APROBADAS DIRECTAMENTE) =====
     archivo.addEventListener('change', async () => {
         const archivos = Array.from(archivo.files);
         if (!archivos.length) return;
@@ -434,7 +430,7 @@
                     subidoPor: usuarioActual.uid,
                     subidoPorNombre: 'Admin',
                     imgbb_id: data.data.id,
-                    estado: 'aprobada'  // ⭐ Las del admin se aprueban automáticamente
+                    estado: 'aprobada'
                 });
 
                 estado(estadoSubida, '✅ Foto publicada.', 'ok');
@@ -449,7 +445,6 @@
         archivo.value = '';
     });
 
-    // ===== CREAR USUARIO =====
     document.getElementById('form-usuario').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -505,7 +500,6 @@
         }
     });
 
-    // ===== LISTAR USUARIOS =====
     function cargarUsuarios() {
         onValue(ref(db, 'usuarios'), (snapshot) => {
             const lista = document.getElementById('lista-usuarios');
@@ -627,7 +621,6 @@
         }
     }
 
-    // ===== LIGHTBOX =====
     const lightbox = document.getElementById('lightbox');
     function abrirLightbox(url) {
         document.getElementById('lightbox-img').src = url;
