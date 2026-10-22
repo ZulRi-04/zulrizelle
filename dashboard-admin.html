@@ -152,7 +152,7 @@
                 <p class="ayuda">El nuevo usuario solo podrá ver fotos y subir las suyas para aprobación.</p>
                 <form id="form-usuario">
                     <label for="nuevo-usuario">Nombre de usuario</label>
-                    <input type="text" id="nuevo-usuario" placeholder="ej: ana" autocomplete="off" required>
+                    <input type="text" id="nuevo-usuario" placeholder="ej: sahel" autocomplete="off" required>
                     <label for="nueva-clave">Contraseña (mínimo 6 caracteres)</label>
                     <input type="password" id="nueva-clave" placeholder="Contraseña" autocomplete="new-password" required>
                     <button type="submit" class="btn" id="crear-btn">Crear usuario</button>
@@ -241,7 +241,7 @@
 
         if (!usuarioData || usuarioData.rol !== 'admin') {
             alert("Acceso denegado.");
-            window.location.href = "dashboard-usuario.html";
+            window.location.href = "index.html";
             return;
         }
 
@@ -459,6 +459,7 @@
         await cargarFotos();
     });
 
+    // ===== CREAR USUARIO CON RESTAURACIÓN DE SESIÓN =====
     document.getElementById('form-usuario').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -475,11 +476,22 @@
         }
 
         crearBtn.disabled = true;
-        estado(estadoUsuario, 'Creando usuario…');
+        estado(estadoUsuario, 'Preparando creación...');
 
         try {
             const email = nombre.toLowerCase() + '@zulri.com';
+            
+            // Pedir contraseña del admin para restaurar la sesión después de crear el usuario
+            const adminPassword = prompt("Por seguridad, ingresa tu contraseña de administrador para autorizar esta acción:");
+            if (!adminPassword) {
+                crearBtn.disabled = false;
+                estado(estadoUsuario, 'Operación cancelada.', 'error');
+                return;
+            }
 
+            estado(estadoUsuario, 'Creando usuario en el sistema...');
+
+            // 1. Crear el usuario nuevo
             const { data: authData, error: authError } = await supabaseClient.auth.signUp({
                 email: email,
                 password: clave
@@ -487,6 +499,21 @@
 
             if (authError) throw authError;
 
+            estado(estadoUsuario, 'Verificando permisos...');
+
+            // 2. Restaurar la sesión del administrador inmediatamente
+            const { error: loginError } = await supabaseClient.auth.signInWithPassword({
+                email: usuarioActual.email,
+                password: adminPassword
+            });
+
+            if (loginError) {
+                throw new Error("Contraseña de administrador incorrecta. Vuelve a iniciar sesión.");
+            }
+
+            estado(estadoUsuario, 'Guardando datos del usuario...');
+
+            // 3. Insertar en la base de datos (ahora sí como admin)
             const { error: usuarioError } = await supabaseClient
                 .from('usuarios')
                 .insert({
@@ -499,12 +526,15 @@
 
             if (usuarioError) throw usuarioError;
 
-            estado(estadoUsuario, '✅ Usuario "' + nombre + '" creado.', 'ok');
+            estado(estadoUsuario, '✅ Usuario "' + nombre + '" creado exitosamente.', 'ok');
             document.getElementById('form-usuario').reset();
             await cargarUsuarios();
         } catch (error) {
             console.error(error);
-            const msg = error.message.includes("already") ? 'Ese nombre ya existe.' : 'Error: ' + error.message;
+            let msg = 'Error: ' + error.message;
+            if (error.message.includes("already") || error.message.includes("User already registered")) {
+                msg = 'Ese nombre de usuario ya existe.';
+            }
             estado(estadoUsuario, msg, 'error');
         } finally {
             crearBtn.disabled = false;
