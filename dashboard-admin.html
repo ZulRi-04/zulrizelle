@@ -252,25 +252,43 @@
         
         usuarioActual = user;
         document.getElementById('user-email').textContent = user.email;
+        
+        console.log('✅ Admin autenticado:', user.email);
 
         cargarFotos();
         cargarUsuarios();
     });
 
     function cargarFotos() {
+        console.log('📡 Escuchando cambios en fotos...');
+        
         onValue(ref(db, 'fotos'), (snapshot) => {
             todasLasFotos = [];
+            
+            if (!snapshot.exists()) {
+                console.log('⚠️ No hay fotos en la base de datos');
+                actualizarContadores();
+                pintarGaleria();
+                return;
+            }
+            
             snapshot.forEach(child => {
                 const data = child.val();
-                // ⭐ Normalizar: si no tiene estado, tratar como pendiente
+                // Asegurar que todas las fotos tengan un estado
                 if (!data.estado) {
                     data.estado = 'pendiente';
                 }
                 todasLasFotos.push({ id: child.key, ...data });
             });
+            
+            console.log(`📸 Total de fotos cargadas: ${todasLasFotos.length}`);
+            console.log('📋 Fotos:', todasLasFotos);
+            
             todasLasFotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
             actualizarContadores();
             pintarGaleria();
+        }, (error) => {
+            console.error('❌ Error al cargar fotos:', error);
         });
     }
 
@@ -278,6 +296,8 @@
         const pendientes = todasLasFotos.filter(f => f.estado === 'pendiente').length;
         const aprobadas = todasLasFotos.filter(f => f.estado === 'aprobada').length;
         const denegadas = todasLasFotos.filter(f => f.estado === 'denegada').length;
+        
+        console.log(`📊 Contadores - Pendientes: ${pendientes}, Aprobadas: ${aprobadas}, Denegadas: ${denegadas}`);
         
         document.getElementById('cont-pendientes').textContent = pendientes;
         document.getElementById('cont-aprobadas').textContent = aprobadas;
@@ -288,6 +308,9 @@
         galeria.innerHTML = '';
 
         const fotosFiltradas = todasLasFotos.filter(f => f.estado === filtroActual);
+        
+        console.log(`🎨 Mostrando ${fotosFiltradas.length} fotos en pestaña "${filtroActual}"`);
+        
         vacio.hidden = fotosFiltradas.length > 0;
 
         fotosFiltradas.forEach(foto => {
@@ -358,9 +381,12 @@
     }
 
     async function cambiarEstado(foto, nuevoEstado) {
+        console.log(`🔄 Cambiando estado de foto ${foto.id} a "${nuevoEstado}"`);
         try {
             await update(ref(db, 'fotos/' + foto.id), { estado: nuevoEstado });
+            console.log('✅ Estado actualizado correctamente');
         } catch (error) {
+            console.error('❌ Error al cambiar estado:', error);
             alert('Error: ' + error.message);
         }
     }
@@ -379,6 +405,7 @@
             document.querySelectorAll('.pestana').forEach(b => b.classList.remove('activa'));
             btn.classList.add('activa');
             filtroActual = btn.dataset.filtro;
+            console.log(`🔀 Cambiando a pestaña: ${filtroActual}`);
             pintarGaleria();
         });
     });
