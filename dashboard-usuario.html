@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zulri · Galería</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/index.css">
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+        --fondo:#f7f8fa;
+        --blanco:#ffffff;
+        --texto:#1c1c1e;
+        --suave:#8a8f98;
+        --linea:#e6e8eb;
+        --acento:#667eea;
+    }
+    body {
+        font-family:'Inter',sans-serif;
+        background:var(--fondo);
+        color:var(--texto);
+        min-height:100vh;
+    }
+    [hidden] { display:none !important; }
+
+    header {
+        background:var(--blanco);
+        border-bottom:1px solid var(--linea);
+        padding:18px 32px;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:16px;
+        flex-wrap:wrap;
+    }
+    .logo { height:48px; width:auto; object-fit:contain; }
+    .usuario-box { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+    #user-email { font-size:.85rem; color:var(--suave); }
+    .badge {
+        font-size:.7rem;
+        padding:5px 10px;
+        border-radius:20px;
+        background:#eef0ff;
+        color:var(--acento);
+        font-weight:600;
+    }
+    .salir {
+        background:none;
+        border:1px solid var(--linea);
+        padding:8px 14px;
+        border-radius:8px;
+        font-size:.85rem;
+        cursor:pointer;
+        color:var(--texto);
+        transition:.2s;
+    }
+    .salir:hover { background:var(--fondo); }
+
+    main { max-width:1100px; margin:0 auto; padding:32px 24px 60px; }
+    .titulo-row { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:22px; }
+    h1 { font-size:1.5rem; font-weight:600; letter-spacing:-.5px; }
+    #contador { font-size:.85rem; color:var(--suave); }
+
+    .galeria {
+        display:grid;
+        grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+        gap:20px;
+    }
+    .tarjeta {
+        background:var(--blanco);
+        border:1px solid var(--linea);
+        border-radius:12px;
+        overflow:hidden;
+        transition:transform .2s, box-shadow .2s;
+    }
+    .tarjeta:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.06); }
+    .tarjeta img {
+        width:100%;
+        aspect-ratio:4/3;
+        object-fit:cover;
+        display:block;
+        cursor:zoom-in;
+    }
+    .pie { padding:12px 14px; font-size:.8rem; color:var(--suave); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .vacio {
+        padding:70px 20px;
+        text-align:center;
+        color:var(--suave);
+        background:var(--blanco);
+        border:1px dashed var(--linea);
+        border-radius:12px;
+        font-size:.95rem;
+    }
+
+    .lightbox {
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,.92);
+        display:none;
+        align-items:center;
+        justify-content:center;
+        z-index:100;
+        padding:20px;
+    }
+    .lightbox img { max-width:94vw; max-height:86vh; object-fit:contain; border-radius:6px; }
+    .cerrar {
+        position:absolute;
+        top:20px; right:26px;
+        background:none;
+        border:none;
+        color:white;
+        font-size:2rem;
+        cursor:pointer;
+    }
+
+    @media(max-width:760px){
+        header { padding:16px 20px; }
+        .logo { height:40px; }
+        main { padding:24px 16px 50px; }
+        .galeria { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <img src="logo.png" alt="Zulri Supermarket" class="logo">
+    <div class="usuario-box">
+        <span id="user-email">Cargando…</span>
+        <span class="badge">Solo lectura</span>
+        <button class="salir" id="salir-btn">Salir</button>
+    </div>
+</header>
+
+<main>
+    <div class="titulo-row">
+        <h1>Fotos</h1>
+        <span id="contador"></span>
+    </div>
+
+    <div class="galeria" id="galeria"></div>
+    <div class="vacio" id="vacio" hidden>Aún no hay fotos disponibles.</div>
+</main>
+
+<div class="lightbox" id="lightbox">
+    <button class="cerrar" id="cerrar-lightbox" aria-label="Cerrar">×</button>
+    <img id="lightbox-img" alt="Foto ampliada">
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyBveW42iYdCHka8Q_pFlHTR2E6ou7DTek0",
+        authDomain: "zulri-1c741.firebaseapp.com",
+        databaseURL: "https://zulri-1c741-default-rtdb.firebaseio.com",
+        projectId: "zulri-1c741",
+        storageBucket: "zulri-1c741.firebasestorage.app",
+        messagingSenderId: "694828053364",
+        appId: "1:694828053364:web:b617344a0cfaefc954f221"
+    };
+
+    const ADMIN_EMAIL = "richard@zulri.local";
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    const galeria = document.getElementById('galeria');
+    const vacio = document.getElementById('vacio');
+    const contador = document.getElementById('contador');
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) {
+            window.location.href = "index.html";
+            return;
+        }
+        
+        if (user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
+            window.location.href = "dashboard-admin.html";
+            return;
+        }
+        
+        document.getElementById('user-email').textContent = user.email;
+        cargarFotos();
+    });
+
+    function cargarFotos() {
+        onValue(ref(db, 'fotos'), (snapshot) => {
+            const fotos = [];
+            snapshot.forEach(child => fotos.push({ id: child.key, ...child.val() }));
+            fotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
+            pintarGaleria(fotos);
+        });
+    }
+
+    function pintarGaleria(fotos) {
+        galeria.innerHTML = '';
+        contador.textContent = fotos.length + (fotos.length === 1 ? ' foto' : ' fotos');
+        vacio.hidden = fotos.length > 0;
+
+        fotos.forEach(foto => {
+            const tarjeta = document.createElement('div');
+            tarjeta.className = 'tarjeta';
+
+            const img = document.createElement('img');
+            img.src = foto.url;
+            img.alt = foto.nombre || 'Foto';
+            img.loading = 'lazy';
+            img.addEventListener('click', () => abrirLightbox(foto.url));
+
+            tarjeta.appendChild(img);
+
+            const pie = document.createElement('div');
+            pie.className = 'pie';
+            pie.textContent = foto.nombre || 'Foto';
+            tarjeta.appendChild(pie);
+
+            galeria.appendChild(tarjeta);
+        });
+    }
+
+    const lightbox = document.getElementById('lightbox');
+    function abrirLightbox(url) {
+        document.getElementById('lightbox-img').src = url;
+        lightbox.style.display = 'flex';
+    }
+    document.getElementById('cerrar-lightbox').addEventListener('click', () => lightbox.style.display = 'none');
+    lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.style.display = 'none'; });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lightbox.style.display = 'none'; });
+
+    document.getElementById('salir-btn').addEventListener('click', async () => {
+        await signOut(auth);
+        window.location.href = "index.html";
+    });
+</script>
+
+</body>
+</html>
