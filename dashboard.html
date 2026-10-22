@@ -275,9 +275,8 @@
         appId: "1:694828053364:web:b617344a0cfaefc954f221"
     };
 
-    // ⚠️ PEGA AQUÍ TU CLAVE API DE IMGBB (la obtuviste en el Paso 1)
-    const IMGBB_API_KEY = "PEGA_TU_CLAVE_API_AQUI";
-
+    // ✅ TU CLAVE API DE IMGBB YA ESTÁ INTEGRADA AQUÍ
+    const IMGBB_API_KEY = "05a3f5378c00a0a3a197b19c3343959e";
     const ADMIN_EMAIL = "richard@zulri.local";
 
     const app = initializeApp(firebaseConfig);
@@ -330,8 +329,7 @@
             fotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
             pintarGaleria(fotos);
         }, (error) => {
-            estado(document.getElementById('estado-fotos'),
-                'No se pudieron cargar las fotos. (' + error.code + ')', 'error');
+            estado(document.getElementById('estado-fotos'), 'No se pudieron cargar las fotos. (' + error.code + ')', 'error');
         });
     }
 
@@ -370,16 +368,10 @@
         });
     }
 
-    // ===== SUBIR FOTOS A IMGBB =====
     archivo.addEventListener('change', async () => {
         if (!esAdmin) return;
         const archivos = Array.from(archivo.files);
         if (!archivos.length) return;
-
-        if (!IMGBB_API_KEY || IMGBB_API_KEY === "PEGA_TU_CLAVE_API_AQUI") {
-            estado(estadoSubida, '❌ Configura tu clave API de ImgBB en el código.', 'error');
-            return;
-        }
 
         archivo.disabled = true;
         progreso.hidden = false;
@@ -441,9 +433,6 @@
         if (!confirm('¿Eliminar esta foto? Los usuarios dejarán de verla.')) return;
 
         try {
-            // Opcional: eliminar también de ImgBB si tienes la API key
-            // await fetch('https://api.imgbb.com/1/delete?key=' + IMGBB_API_KEY + '&id=' + foto.imgbb_id, { method: 'DELETE' });
-            
             await remove(ref(db, 'fotos/' + foto.id));
         } catch (error) {
             estado(document.getElementById('estado-fotos'), 'No se pudo eliminar: ' + error.message, 'error');
