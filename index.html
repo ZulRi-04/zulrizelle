@@ -25,7 +25,7 @@
         button { width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-top: 0.5rem; transition: transform 0.2s, box-shadow 0.2s; }
         button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
         button:disabled { opacity: 0.6; cursor: not-allowed; }
-        #message { text-align: center; margin-top: 1rem; font-size: 0.9rem; min-height: 1.2em; font-weight: 500; }
+        #message { text-align: center; margin-top: 1rem; font-size: 0.9rem; min-height: 1.2em; font-weight: 500; word-wrap: break-word; }
         .error { color: #dc2626; }
         .success { color: #16a34a; }
         .loader { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
@@ -66,7 +66,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyBveW42iYdCHka8Q_pFlHTR2E6ou7DTek0",
@@ -127,33 +127,57 @@
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Verificar si el usuario está activo (excepto el admin)
-            if (email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
-                const userSnapshot = await get(ref(db, 'usuarios/' + user.uid));
-                if (userSnapshot.exists()) {
-                    const userData = userSnapshot.val();
-                    if (userData.activo === false) {
-                        await signOut(auth);
-                        mostrarMensaje("Esta cuenta ha sido desactivada. Contacta al administrador.", "error");
-                        loginBtn.disabled = false;
-                        loginBtn.textContent = textoOriginal;
-                        return;
-                    }
-                }
-            }
-
-            // Redirigir según el rol
+            // Si es el admin, redirigir directamente
             if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase()) {
                 mostrarMensaje("¡Bienvenido, Administrador!", "success");
                 setTimeout(() => {
                     window.location.href = "dashboard-admin.html";
                 }, 1000);
-            } else {
+                return;
+            }
+
+            // Verificar si el usuario existe en la base de datos
+            const userSnapshot = await get(ref(db, 'usuarios/' + user.uid));
+            
+            if (!userSnapshot.exists()) {
+                // Usuario no existe en la base de datos, crearlo como activo
+                console.log("Usuario no encontrado en DB, creándolo como activo...");
+                await set(ref(db, 'usuarios/' + user.uid), {
+                    nombre: username,
+                    email: email,
+                    rol: 'lector',
+                    activo: true,
+                    creado: Date.now()
+                });
+                
                 mostrarMensaje("¡Bienvenido!", "success");
                 setTimeout(() => {
                     window.location.href = "dashboard-usuario.html";
                 }, 1000);
+                return;
             }
+
+            const userData = userSnapshot.val();
+
+            // Verificar si el usuario está activo
+            if (userData.activo === false) {
+                await signOut(auth);
+                mostrarMensaje("❌ Esta cuenta ha sido desactivada. Contacta al administrador.", "error");
+                loginBtn.disabled = false;
+                loginBtn.textContent = textoOriginal;
+                return;
+            }
+
+            // Si no tiene el campo "activo", agregarlo como true
+            if (userData.activo === undefined) {
+                console.log("Agregando campo 'activo: true' al usuario...");
+                await set(ref(db, 'usuarios/' + user.uid + '/activo'), true);
+            }
+
+            mostrarMensaje("¡Bienvenido!", "success");
+            setTimeout(() => {
+                window.location.href = "dashboard-usuario.html";
+            }, 1000);
             
         } catch (error) {
             console.error("Error de Firebase:", error);
