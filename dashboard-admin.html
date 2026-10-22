@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Zulri Supermarket · Panel</title>
+<title>Zulri · Panel de Administración</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/index.css">
 <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -203,7 +203,7 @@
     <img src="logo.png" alt="Zulri Supermarket" class="logo">
     <div class="usuario-box">
         <span id="user-email">Cargando…</span>
-        <span class="badge" id="badge-rol">—</span>
+        <span class="badge">Administrador</span>
         <button class="salir" id="salir-btn">Salir</button>
     </div>
 </header>
@@ -218,7 +218,7 @@
     <div class="vacio" id="vacio" hidden>Aún no hay fotos disponibles.</div>
     <div class="estado" id="estado-fotos"></div>
 
-    <section class="panel-admin" id="admin-panel" hidden>
+    <section class="panel-admin">
         <h2>Panel de administración</h2>
 
         <div class="admin-grid">
@@ -275,7 +275,6 @@
         appId: "1:694828053364:web:b617344a0cfaefc954f221"
     };
 
-    // ✅ TU CLAVE API DE IMGBB YA ESTÁ INTEGRADA AQUÍ
     const IMGBB_API_KEY = "05a3f5378c00a0a3a197b19c3343959e";
     const ADMIN_EMAIL = "richard@zulri.local";
 
@@ -289,12 +288,10 @@
     });
 
     let usuarioActual = null;
-    let esAdmin = false;
 
     const galeria = document.getElementById('galeria');
     const vacio = document.getElementById('vacio');
     const contador = document.getElementById('contador');
-    const adminPanel = document.getElementById('admin-panel');
     const archivo = document.getElementById('archivo');
     const progreso = document.getElementById('progreso');
     const estadoSubida = document.getElementById('estado-subida');
@@ -311,15 +308,18 @@
             window.location.href = "index.html";
             return;
         }
+        
+        if (user.email.toLowerCase() !== ADMIN_EMAIL.toLowerCase()) {
+            alert("Acceso denegado. Esta página es solo para administradores.");
+            window.location.href = "dashboard-usuario.html";
+            return;
+        }
+        
         usuarioActual = user;
-        esAdmin = user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
-
         document.getElementById('user-email').textContent = user.email;
-        document.getElementById('badge-rol').textContent = esAdmin ? 'Administrador' : 'Solo lectura';
-        adminPanel.hidden = !esAdmin;
 
         cargarFotos();
-        if (esAdmin) cargarUsuarios();
+        cargarUsuarios();
     });
 
     function cargarFotos() {
@@ -328,8 +328,6 @@
             snapshot.forEach(child => fotos.push({ id: child.key, ...child.val() }));
             fotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
             pintarGaleria(fotos);
-        }, (error) => {
-            estado(document.getElementById('estado-fotos'), 'No se pudieron cargar las fotos. (' + error.code + ')', 'error');
         });
     }
 
@@ -350,14 +348,12 @@
 
             tarjeta.appendChild(img);
 
-            if (esAdmin) {
-                const btn = document.createElement('button');
-                btn.className = 'eliminar';
-                btn.textContent = '×';
-                btn.title = 'Eliminar foto';
-                btn.addEventListener('click', () => eliminarFoto(foto));
-                tarjeta.appendChild(btn);
-            }
+            const btn = document.createElement('button');
+            btn.className = 'eliminar';
+            btn.textContent = '×';
+            btn.title = 'Eliminar foto';
+            btn.addEventListener('click', () => eliminarFoto(foto));
+            tarjeta.appendChild(btn);
 
             const pie = document.createElement('div');
             pie.className = 'pie';
@@ -369,7 +365,6 @@
     }
 
     archivo.addEventListener('change', async () => {
-        if (!esAdmin) return;
         const archivos = Array.from(archivo.files);
         if (!archivos.length) return;
 
@@ -429,7 +424,6 @@
     });
 
     async function eliminarFoto(foto) {
-        if (!esAdmin) return;
         if (!confirm('¿Eliminar esta foto? Los usuarios dejarán de verla.')) return;
 
         try {
@@ -441,7 +435,6 @@
 
     document.getElementById('form-usuario').addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!esAdmin) return;
 
         const nombre = document.getElementById('nuevo-usuario').value.trim();
         const clave = document.getElementById('nueva-clave').value;
