@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Zulri · Galería</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/index.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
 <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -28,7 +29,6 @@
     h1 { font-size:1.5rem; font-weight:600; letter-spacing:-.5px; margin-bottom:22px; }
     h2 { font-size:1.1rem; margin-bottom:16px; font-weight:600; }
 
-    /* ===== SECCIÓN DE SUBIDA MEJORADA ===== */
     .seccion-subir { 
         background:var(--blanco); 
         border:1px solid var(--linea); 
@@ -84,7 +84,6 @@
     }
     #archivo { display:none; }
     
-    /* Campo de nombre de cuenta */
     .campo-cuenta {
         margin-bottom: 20px;
     }
@@ -118,7 +117,6 @@
     .estado.error { color:var(--peligro); }
     .estado.ok { color:var(--exito); }
 
-    /* ===== PESTAÑAS ===== */
     .pestanas { display:flex; gap:8px; margin-bottom:22px; border-bottom:1px solid var(--linea); flex-wrap:wrap; }
     .pestana { padding:10px 18px; background:none; border:none; border-bottom:2px solid transparent; cursor:pointer; font-size:.9rem; color:var(--suave); font-weight:500; transition:.2s; }
     .pestana:hover { color:var(--texto); }
@@ -126,7 +124,6 @@
     .pestana .contador { display:inline-block; background:var(--fondo); padding:2px 8px; border-radius:10px; font-size:.75rem; margin-left:6px; }
     .pestana .contador.alerta { background:#fef3c7; color:#92400e; }
 
-    /* ===== GALERÍA ===== */
     .galeria { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:20px; }
     .tarjeta { background:var(--blanco); border:1px solid var(--linea); border-radius:12px; overflow:hidden; transition:transform .2s, box-shadow .2s; position:relative; }
     .tarjeta:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.06); }
@@ -135,7 +132,6 @@
     .pie-fila { display:flex; justify-content:space-between; align-items:center; gap:8px; }
     .pie-nombre { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight: 500; color: var(--texto); }
     
-    /* Nombre de cuenta remitente */
     .pie-cuenta {
         font-size: 0.75rem;
         color: var(--acento);
@@ -187,7 +183,6 @@
 </header>
 
 <main>
-    <!-- SECCIÓN DE SUBIDA MEJORADA -->
     <div class="seccion-subir">
         <h2>Subir foto</h2>
         <p class="ayuda">Sube una foto para que el administrador la revise. Una vez aprobada, será visible para todos los usuarios.</p>
@@ -208,15 +203,14 @@
         <div class="estado" id="estado-subida"></div>
     </div>
 
-    <!-- PESTAÑAS -->
     <div class="pestanas">
-        <button class="pestana activa" data-filtro="aprobadas">
+        <button class="pestana activa" data-filtro="aprobada">
             ✓ Aprobadas <span class="contador" id="cont-aprobadas">0</span>
         </button>
-        <button class="pestana" data-filtro="pendientes">
+        <button class="pestana" data-filtro="pendiente">
             ⏳ Mis pendientes <span class="contador alerta" id="cont-pendientes">0</span>
         </button>
-        <button class="pestana" data-filtro="denegadas">
+        <button class="pestana" data-filtro="denegada">
             ✗ Mis denegadas <span class="contador" id="cont-denegadas">0</span>
         </button>
     </div>
@@ -230,20 +224,11 @@
     <img id="lightbox-img" alt="Foto ampliada">
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<script>
+    const SUPABASE_URL = 'https://phaqrcaxyiriwbybkgpx.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBoYXFyY2F4eWlyaXdieWJrZ3B4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI2MzI2ODQsImV4cCI6MjEwODIwODY4NH0.hP6uAgWgJXnN5tSjmtbSe9Go26zAlHk3qdUkHNRlkRQ';
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyBveW42iYdCHka8Q_pFlHTR2E6ou7DTek0",
-        authDomain: "zulri-1c741.firebaseapp.com",
-        databaseURL: "https://zulri-1c741-default-rtdb.firebaseio.com",
-        projectId: "zulri-1c741",
-        storageBucket: "zulri-1c741.firebasestorage.app",
-        messagingSenderId: "694828053364",
-        appId: "1:694828053364:web:b617344a0cfaefc954f221"
-    };
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const IMGBB_API_KEY = "05a3f5378c00a0a3a197b19c3343959e";
 
@@ -254,12 +239,8 @@
         fileType: 'image/jpeg'
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
     let usuarioActual = null;
-    let filtroActual = 'aprobadas';
+    let filtroActual = 'aprobada';
     let todasLasFotos = [];
 
     const galeria = document.getElementById('galeria');
@@ -274,36 +255,53 @@
         el.className = 'estado ' + tipo;
     }
 
-    onAuthStateChanged(auth, (user) => {
-        if (!user) {
+    async function verificarSesion() {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
             window.location.href = "index.html";
             return;
         }
-        
-        usuarioActual = user;
-        document.getElementById('user-email').textContent = user.email;
-        cargarFotos();
-    });
 
-    function cargarFotos() {
-        onValue(ref(db, 'fotos'), (snapshot) => {
-            todasLasFotos = [];
-            snapshot.forEach(child => {
-                const data = child.val();
-                if (!data.estado) data.estado = 'pendiente';
-                todasLasFotos.push({ id: child.key, ...data });
-            });
-            todasLasFotos.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
-            actualizarContadores();
-            pintarGaleria();
-        });
+        const { data: usuarioData } = await supabase
+            .from('usuarios')
+            .select('email, activo')
+            .eq('id', session.user.id)
+            .single();
+
+        if (!usuarioData || !usuarioData.activo) {
+            window.location.href = "index.html";
+            return;
+        }
+
+        usuarioActual = session.user;
+        document.getElementById('user-email').textContent = usuarioData.email;
+        cargarFotos();
+    }
+
+    verificarSesion();
+
+    async function cargarFotos() {
+        const { data, error } = await supabase
+            .from('fotos')
+            .select('*')
+            .order('fecha', { ascending: false });
+
+        if (error) {
+            console.error('Error al cargar fotos:', error);
+            return;
+        }
+
+        todasLasFotos = data || [];
+        actualizarContadores();
+        pintarGaleria();
     }
 
     function actualizarContadores() {
         const aprobadas = todasLasFotos.filter(f => f.estado === 'aprobada').length;
-        const misPendientes = todasLasFotos.filter(f => f.estado === 'pendiente' && f.subidoPor === usuarioActual.uid).length;
-        const misDenegadas = todasLasFotos.filter(f => f.estado === 'denegada' && f.subidoPor === usuarioActual.uid).length;
-        
+        const misPendientes = todasLasFotos.filter(f => f.estado === 'pendiente' && f.subido_por === usuarioActual.id).length;
+        const misDenegadas = todasLasFotos.filter(f => f.estado === 'denegada' && f.subido_por === usuarioActual.id).length;
+
         document.getElementById('cont-aprobadas').textContent = aprobadas;
         document.getElementById('cont-pendientes').textContent = misPendientes;
         document.getElementById('cont-denegadas').textContent = misDenegadas;
@@ -313,12 +311,12 @@
         galeria.innerHTML = '';
 
         let fotosFiltradas;
-        if (filtroActual === 'aprobadas') {
+        if (filtroActual === 'aprobada') {
             fotosFiltradas = todasLasFotos.filter(f => f.estado === 'aprobada');
-        } else if (filtroActual === 'pendientes') {
-            fotosFiltradas = todasLasFotos.filter(f => f.estado === 'pendiente' && f.subidoPor === usuarioActual.uid);
+        } else if (filtroActual === 'pendiente') {
+            fotosFiltradas = todasLasFotos.filter(f => f.estado === 'pendiente' && f.subido_por === usuarioActual.id);
         } else {
-            fotosFiltradas = todasLasFotos.filter(f => f.estado === 'denegada' && f.subidoPor === usuarioActual.uid);
+            fotosFiltradas = todasLasFotos.filter(f => f.estado === 'denegada' && f.subido_por === usuarioActual.id);
         }
 
         vacio.hidden = fotosFiltradas.length > 0;
@@ -345,11 +343,10 @@
             fila1.appendChild(nombre);
             pie.appendChild(fila1);
 
-            // Mostrar nombre de cuenta remitente si existe
-            if (foto.cuentaRemitente) {
+            if (foto.cuenta_remitente) {
                 const cuenta = document.createElement('div');
                 cuenta.className = 'pie-cuenta';
-                cuenta.textContent = foto.cuentaRemitente;
+                cuenta.textContent = foto.cuenta_remitente;
                 pie.appendChild(cuenta);
             }
 
@@ -436,19 +433,24 @@
 
             progreso.value = 90;
 
-            await push(ref(db, 'fotos'), {
-                url: data.data.url,
-                nombre: file.name,
-                cuentaRemitente: nombreCuenta, // ⭐ NUEVO CAMPO
-                fecha: Date.now(),
-                subidoPor: usuarioActual.uid,
-                subidoPorNombre: usuarioActual.email.split('@')[0],
-                imgbb_id: data.data.id,
-                estado: 'pendiente'
-            });
+            const { error } = await supabase
+                .from('fotos')
+                .insert({
+                    url: data.data.url,
+                    nombre: file.name,
+                    cuenta_remitente: nombreCuenta,
+                    fecha: Date.now(),
+                    subido_por: usuarioActual.id,
+                    subido_por_nombre: usuarioActual.email.split('@')[0],
+                    imgbb_id: data.data.id,
+                    estado: 'pendiente'
+                });
+
+            if (error) throw error;
 
             estado(estadoSubida, '✅ Foto enviada. Esperando aprobación.', 'ok');
-            nombreCuentaInput.value = ''; // Limpiar el campo
+            nombreCuentaInput.value = '';
+            await cargarFotos();
         } catch (error) {
             console.error(error);
             estado(estadoSubida, 'Error: ' + error.message, 'error');
@@ -469,7 +471,7 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') lightbox.style.display = 'none'; });
 
     document.getElementById('salir-btn').addEventListener('click', async () => {
-        await signOut(auth);
+        await supabase.auth.signOut();
         window.location.href = "index.html";
     });
 </script>
